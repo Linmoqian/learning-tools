@@ -18,4 +18,4 @@
 
 # 参考项目
 - [Tauri](https://tauri.app/) - 跨平台桌面应用框架
- - [MinerU](https://github.com/MinerU/MinerU)
+ - [MinerU](https://github.com/MinerU/MinerU)-任何文件都能转为md

@@ -13,6 +13,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             agent::commands::run_agent,
+            agent::commands::run_agent_stream,
             agent::commands::get_api_key_status,
             agent::commands::save_api_key,
         ])

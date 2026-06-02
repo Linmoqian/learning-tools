@@ -49,13 +49,10 @@ export interface RunAgentRequest {
 export interface AgentResult {
   content: string;
   model: string;
-  provider: string;
+  provider: AIProvider;
 }
 
-export interface ApiKeyStatus {
-  claude: boolean;
-  openai: boolean;
-}
+export type ApiKeyStatus = Record<AIProvider, boolean>;
 
 export interface AgentError {
   message: string;

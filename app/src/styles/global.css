@@ -11,6 +11,8 @@
   --bg-secondary: #1a2038;
   --bg-tertiary: #222a48;
   --bg-card: rgba(26, 32, 56, 0.85);
+  --bg-sidebar: rgba(15, 20, 34, 0.95);
+  --border-color: rgba(255, 255, 255, 0.06);
 
   --text-primary: #f0e8da;
   --text-secondary: #a8a0b8;
@@ -50,6 +52,8 @@
   --bg-secondary: #f5f0e8;
   --bg-tertiary: #ede6d8;
   --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-sidebar: rgba(245, 240, 232, 0.95);
+  --border-color: rgba(0, 0, 0, 0.08);
 
   --text-primary: #2c2418;
   --text-secondary: #7a6e5e;

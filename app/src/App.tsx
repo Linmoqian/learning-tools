@@ -93,9 +93,9 @@ function AppShell() {
         animate={{ width: expanded ? 180 : 56 }}
         transition={{ duration: 0.2, ease: 'easeInOut' }}
         style={{
-          background: 'rgba(15,20,34,0.9)',
+          background: 'var(--bg-sidebar)',
           backdropFilter: 'blur(16px)',
-          borderRight: '1px solid rgba(255,255,255,0.06)',
+          borderRight: '1px solid var(--border-color)',
           display: 'flex',
           flexDirection: 'column',
           padding: '12px 0',

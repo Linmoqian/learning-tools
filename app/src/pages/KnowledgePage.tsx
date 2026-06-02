@@ -11,7 +11,8 @@ import {
   useKnowledgeBase, searchItems, SUBJECTS, SUBJECT_COLORS,
 } from '../lib/knowledge';
 import { parseFile, fileToNoteInput } from '../lib/fileParser';
-import { checkMineruServer, isMineruOnline, convertWithMineru, getImageUrl } from '../lib/mineruClient';
+import { checkMineruServer, isMineruOnline, convertWithMineru, getImageUrl, setServerUrl } from '../lib/mineruClient';
+import { useStore } from '../lib/store';
 import type { Note, KnowledgePoint, SubjectStat } from '../lib/knowledge';
 
 type Tab = 'browse' | 'graph' | 'analysis';
@@ -462,6 +463,15 @@ export default function KnowledgePage() {
   const [processingFiles, setProcessingFiles] = useState(false);
   const [mineruOnline, setMineruOnline] = useState(false);
   const serverCheckDone = useRef(false);
+  const { data } = useStore();
+
+  // 从设置读取 MinerU 服务地址
+  useEffect(() => {
+    const { mineru } = data.settings;
+    if (mineru.apiUrl) {
+      setServerUrl(mineru.apiUrl);
+    }
+  }, [data.settings.mineru.apiUrl]);
 
   // Check MinerU server status on mount
   useEffect(() => {
@@ -611,7 +621,7 @@ export default function KnowledgePage() {
                   fontSize: 10, color: '#6b6480', textAlign: 'center',
                   background: 'rgba(255,255,255,0.02)', padding: '4px 12px', borderRadius: 6,
                 }}>
-                  提示：启动 <code style={{ color: '#f0c040' }}>python mineru_service.py</code> 可获得公式、表格、图片的完整转换支持
+                  提示：启动 <code style={{ color: '#f0c040' }}>mineru-service</code> 可启用服务端文档转换（公式/表格/图片）
                 </div>
               )}
 

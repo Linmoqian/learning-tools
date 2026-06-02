@@ -242,7 +242,7 @@ function ConstellationField() {
         <g key={s.id}>
           <circle
             cx={`${s.x}%`} cy={`${s.y}%`} r={s.size * 0.6}
-            fill={s.bright > 0.7 ? COSMIC.goldLight : '#64748b'}
+            fill={s.bright > 0.7 ? 'var(--gold-light)' : '#64748b'}
             opacity={0.15 + s.size * 0.12}
             style={{ animation: s.bright > 0.7 ? `pulse-star ${s.pulse}s ${s.delay}s ease-in-out infinite` : 'none' }}
           />
@@ -301,7 +301,7 @@ function AstralToast({ message, type, onDone }: { message: string; type: 'succes
   useEffect(() => { const t = setTimeout(onDone, 2200); return () => clearTimeout(t); }, [onDone]);
 
   const colors = {
-    success: { border: 'rgba(212,168,67,0.4)', text: COSMIC.goldLight, shadow: 'rgba(212,168,67,0.2)' },
+    success: { border: 'rgba(212,168,67,0.4)', text: 'var(--gold-light)', shadow: 'rgba(212,168,67,0.2)' },
     error: { border: 'rgba(239,68,68,0.4)', text: '#ef4444', shadow: 'rgba(239,68,68,0.2)' },
     info: { border: 'rgba(14,165,233,0.4)', text: '#0ea5e9', shadow: 'rgba(14,165,233,0.2)' },
   };
@@ -351,8 +351,8 @@ function OrbitRing({ size = 100 }: { size?: number }) {
       <div style={{
         position: 'absolute', top: -3, left: '50%', marginLeft: -2,
         width: 5, height: 5, borderRadius: '50%',
-        background: COSMIC.gold,
-        boxShadow: `0 0 8px ${COSMIC.gold}`,
+        background: 'var(--gold)',
+        boxShadow: `0 0 8px ${'var(--gold)'}`,
       }} />
     </div>
   );
@@ -393,7 +393,8 @@ const QUICK_TIMES = [
 // 主组件
 // ====================================================================
 export default function GachaPage() {
-  const { dispatch, getAvailableTasks } = useStore();
+  const { dispatch, getAvailableTasks, data } = useStore();
+  const isDark = data.settings.theme.themeMode === 'dark';
 
   useFontLoader();
 
@@ -511,10 +512,15 @@ export default function GachaPage() {
 
   return (
     <div style={{ padding: '24px 32px', height: '100%', display: 'flex', flexDirection: 'column', gap: 18, overflow: 'auto', position: 'relative' }}>
-      {/* 背景层 */}
-      <NebulaBackground />
-      <ConstellationField />
-      <ShootingStars intensity={meteorIntensity} />
+      {/* 背景层 — 暗色模式显示星空，浅色模式用 CSS 变量背景 */}
+      {isDark && <><NebulaBackground /><ConstellationField /><ShootingStars intensity={meteorIntensity} /></>}
+      {!isDark && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
+          background: 'var(--bg-deep)',
+          opacity: 0.5,
+        }} />
+      )}
 
       {/* Toast */}
       <AnimatePresence>
@@ -535,7 +541,7 @@ export default function GachaPage() {
           </h1>
           <div style={{
             fontFamily: 'var(--font-body), serif', fontSize: 13,
-            color: COSMIC.textMuted, fontStyle: 'italic',
+            color: 'var(--text-muted)', fontStyle: 'italic',
             paddingBottom: '4px',
           }}>
             — 天命择时，群星引路
@@ -578,7 +584,7 @@ export default function GachaPage() {
               <div style={{ fontSize: 22, marginBottom: 4, position: 'relative' }}>{cfg.icon}</div>
               <div style={{
                 fontSize: 14, fontWeight: 700,
-                color: isActive ? '#fff' : COSMIC.textSecondary,
+                color: isActive ? '#fff' : 'var(--text-secondary)',
                 fontFamily: 'var(--font-heading), serif',
                 letterSpacing: '1px',
                 position: 'relative',
@@ -587,7 +593,7 @@ export default function GachaPage() {
               </div>
               <div style={{
                 fontSize: 11,
-                color: isActive ? 'rgba(255,255,255,0.6)' : COSMIC.textMuted,
+                color: isActive ? 'rgba(255,255,255,0.6)' : 'var(--text-muted)',
                 fontFamily: 'var(--font-body), serif',
                 marginTop: 2, position: 'relative',
               }}>
@@ -614,8 +620,8 @@ export default function GachaPage() {
       <div ref={controlRef} style={{ position: 'relative', zIndex: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, flex: 1 }}>
         {/* 时间区 */}
         <div style={{
-          background: COSMIC.glassBg,
-          border: `1px solid ${COSMIC.glassBorder}`,
+          background: 'var(--bg-card)',
+          border: `1px solid ${'rgba(128,128,128,0.15)'}`,
           borderRadius: 20,
           padding: '18px 28px',
           display: 'flex', alignItems: 'center', gap: 16,
@@ -625,7 +631,7 @@ export default function GachaPage() {
         }}>
           {/* 时间 + 卡池指示 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ color: COSMIC.textSecondary, fontSize: 13, fontFamily: 'var(--font-body), serif' }}>择时</span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: 13, fontFamily: 'var(--font-body), serif' }}>择时</span>
             <input
               type="number"
               value={minutes}
@@ -634,13 +640,13 @@ export default function GachaPage() {
                 width: 60, padding: '4px 6px', borderRadius: 10,
                 border: '2px solid rgba(212,168,67,0.3)',
                 background: 'rgba(212,168,67,0.06)',
-                color: COSMIC.gold, fontSize: 22, fontWeight: 700,
+                color: 'var(--gold)', fontSize: 22, fontWeight: 700,
                 textAlign: 'center', outline: 'none',
                 fontFamily: 'var(--font-heading), serif',
                 fontVariantNumeric: 'tabular-nums',
               }}
             />
-            <span style={{ color: COSMIC.textSecondary, fontSize: 13, fontFamily: 'var(--font-body), serif' }}>分钟</span>
+            <span style={{ color: 'var(--text-secondary)', fontSize: 13, fontFamily: 'var(--font-body), serif' }}>分钟</span>
           </div>
 
           <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.06)' }} />
@@ -657,7 +663,7 @@ export default function GachaPage() {
                   padding: '6px 12px', borderRadius: 10,
                   border: `1px solid ${minutes === q.val ? 'rgba(212,168,67,0.4)' : 'rgba(255,255,255,0.06)'}`,
                   background: minutes === q.val ? 'rgba(212,168,67,0.12)' : 'rgba(255,255,255,0.02)',
-                  color: minutes === q.val ? COSMIC.gold : COSMIC.textMuted,
+                  color: minutes === q.val ? 'var(--gold)' : 'var(--text-muted)',
                   fontSize: 11, fontWeight: 600, cursor: 'pointer',
                   fontFamily: 'var(--font-heading), serif',
                   display: 'flex', alignItems: 'center', gap: 4,
@@ -715,7 +721,7 @@ export default function GachaPage() {
                 alignItems: 'center', justifyContent: 'center',
                 gap: 2,
                 opacity: !pool || !availableTasks.length ? 0.35 : 1,
-                color: COSMIC.gold,
+                color: 'var(--gold)',
                 animation: !pool || !availableTasks.length ? 'none' : 'draw-pulse 3s ease-in-out infinite',
                 zIndex: 2,
               }}
@@ -756,7 +762,7 @@ export default function GachaPage() {
                   alignItems: 'center', justifyContent: 'center',
                   gap: 0,
                   opacity: availableTasks.length ? 1 : 0.35,
-                  color: COSMIC.gold,
+                  color: 'var(--gold)',
                   zIndex: 3,
                   padding: 0,
                 }}
@@ -774,7 +780,7 @@ export default function GachaPage() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
             style={{
               fontFamily: 'var(--font-body), serif', fontStyle: 'italic',
-              fontSize: 13, color: COSMIC.textMuted,
+              fontSize: 13, color: 'var(--text-muted)',
             }}
           >
             {!pool
@@ -795,7 +801,7 @@ export default function GachaPage() {
                 padding: '6px 16px', borderRadius: 12,
                 background: 'rgba(212,168,67,0.06)',
                 border: '1px solid rgba(212,168,67,0.12)',
-                fontSize: 11, color: COSMIC.textSecondary,
+                fontSize: 11, color: 'var(--text-secondary)',
                 fontFamily: 'var(--font-body), serif',
               }}
             >
@@ -811,7 +817,7 @@ export default function GachaPage() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ type: 'spring', damping: 20 }}
             style={{
-              background: COSMIC.glassBg, border: `1px solid ${COSMIC.glassBorder}`,
+              background: 'var(--bg-card)', border: `1px solid ${'rgba(128,128,128,0.15)'}`,
               borderRadius: 24, padding: 28,
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
               width: '100%', maxWidth: 360, position: 'relative',
@@ -820,7 +826,7 @@ export default function GachaPage() {
           >
             <div style={{
               fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-heading), serif',
-              color: COSMIC.textPrimary, textAlign: 'center', letterSpacing: '1px',
+              color: 'var(--text-primary)', textAlign: 'center', letterSpacing: '1px',
             }}>
               <span style={{ fontSize: 20, marginRight: 8 }}>✦</span>
               {selectedTask.name}
@@ -834,7 +840,7 @@ export default function GachaPage() {
               </motion.button>
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                 onClick={() => { dispatch({ type: 'SKIP_TASK', id: selectedTask.id }); setSelectedTask(null); setShowTimer(false); }}
-                style={{ padding: '8px 20px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)', background: 'none', color: COSMIC.textSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body), serif' }}>
+                style={{ padding: '8px 20px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)', background: 'none', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body), serif' }}>
                 🔄 暂搁
               </motion.button>
             </div>
@@ -863,11 +869,11 @@ export default function GachaPage() {
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14,
               fontFamily: 'var(--font-heading), serif', fontSize: 14,
-              color: COSMIC.textSecondary, letterSpacing: '1px',
+              color: 'var(--text-secondary)', letterSpacing: '1px',
             }}>
-              <Star size={16} color={COSMIC.gold} fill={COSMIC.gold} />
+              <Star size={16} color={'var(--gold)'} fill={'var(--gold)'} />
               连星之阵
-              <span style={{ color: COSMIC.gold, fontWeight: 600 }}>{planSummary}</span>
+              <span style={{ color: 'var(--gold)', fontWeight: 600 }}>{planSummary}</span>
             </div>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
               {multiResults.flatMap(r => r.choices.slice(0, 2)).map((task, i) => {
@@ -901,7 +907,7 @@ export default function GachaPage() {
                         {rarity.label}
                       </div>
                       <div style={{
-                        fontSize: 14, fontWeight: 700, color: COSMIC.textPrimary,
+                        fontSize: 14, fontWeight: 700, color: 'var(--text-primary)',
                         textAlign: 'center', lineHeight: 1.3,
                         fontFamily: 'var(--font-body), serif',
                         display: '-webkit-box', WebkitLineClamp: 3,
@@ -909,7 +915,7 @@ export default function GachaPage() {
                       }}>
                         {task.name}
                       </div>
-                      <div style={{ fontSize: 11, color: COSMIC.textMuted, fontFamily: 'var(--font-body), serif' }}>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-body), serif' }}>
                         ⏱ {task.estimatedTime} 分钟
                       </div>
                       <motion.button

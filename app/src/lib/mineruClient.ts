@@ -1,5 +1,3 @@
-const SERVER_URL = 'http://127.0.0.1:8899';
-
 export interface MinerUResult {
   name: string;
   title: string;
@@ -8,11 +6,22 @@ export interface MinerUResult {
   error?: string;
 }
 
+let serverUrl = 'http://127.0.0.1:8899';
 let serverOnline = false;
+
+export function setServerUrl(url: string) {
+  serverUrl = url;
+  // 切换服务器时重置状态
+  serverOnline = false;
+}
+
+export function getServerUrl(): string {
+  return serverUrl;
+}
 
 export async function checkMineruServer(): Promise<boolean> {
   try {
-    const resp = await fetch(`${SERVER_URL}/health`, { signal: AbortSignal.timeout(3000) });
+    const resp = await fetch(`${serverUrl}/health`, { signal: AbortSignal.timeout(3000) });
     const data = await resp.json();
     serverOnline = data.status === 'ok';
     return serverOnline;
@@ -30,10 +39,10 @@ export async function convertWithMineru(file: File): Promise<MinerUResult> {
   const formData = new FormData();
   formData.append('file', file);
 
-  const resp = await fetch(`${SERVER_URL}/convert`, {
+  const resp = await fetch(`${serverUrl}/convert`, {
     method: 'POST',
     body: formData,
-    signal: AbortSignal.timeout(300_000), // 5min timeout for large files
+    signal: AbortSignal.timeout(300_000),
   });
 
   if (!resp.ok) {
@@ -45,5 +54,5 @@ export async function convertWithMineru(file: File): Promise<MinerUResult> {
 }
 
 export function getImageUrl(filename: string): string {
-  return `${SERVER_URL}/images/${filename}`;
+  return `${serverUrl}/images/${filename}`;
 }

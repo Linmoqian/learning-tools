@@ -15,3 +15,7 @@
 | `app/` | Tauri + React 统一桌面端（主力） | 开发中 |
 | `任务发布系统/` | Python + PySide6 旧版（功能参考） | 保留 |
 | `笔记处理系统/` | Python 脚本集（功能参考） | 保留 |
+
+# 参考项目
+- [Tauri](https://tauri.app/) - 跨平台桌面应用框架
+ - [MinerU](https://github.com/MinerU/MinerU)

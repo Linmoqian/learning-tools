@@ -1,172 +1,105 @@
-import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
+import { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { SUBJECT_COLORS } from '../lib/knowledge';
 import type { GraphData, GraphNode, GraphEdge } from '../lib/knowledge';
 
-// === 3D Force Simulation ===
-interface Position3D {
-  x: number; y: number; z: number;
-  vx: number; vy: number; vz: number;
-}
+// ===== 3D 力模拟 =====
+interface Pos3D { x: number; y: number; z: number; vx: number; vy: number; vz: number; }
 
-const REPULSION = 8000;
-const ATTRACTION = 0.005;
-const DAMPING = 0.85;
-const CENTER_STRENGTH = 0.01;
-const MAX_SPEED = 10;
-const ITERATIONS = 180;
+const REP = 6000;
+const ATT = 0.004;
+const DAMP = 0.85;
+const CENTER = 0.008;
+const MAX_V = 12;
+const STEPS = 200;
 
-function simulate3D(nodes: GraphNode[], edges: GraphEdge[], size: number): Position3D[] {
-  const pos: Position3D[] = nodes.map(() => ({
-    x: (Math.random() - 0.5) * size * 0.8,
-    y: (Math.random() - 0.5) * size * 0.8,
-    z: (Math.random() - 0.5) * size * 0.6,
+function simulate(nodes: GraphNode[], edges: GraphEdge[], size: number): Pos3D[] {
+  const p: Pos3D[] = nodes.map(() => ({
+    x: (Math.random() - 0.5) * size * 0.7,
+    y: (Math.random() - 0.5) * size * 0.7,
+    z: (Math.random() - 0.5) * size * 0.5,
     vx: 0, vy: 0, vz: 0,
   }));
 
-  for (let iter = 0; iter < ITERATIONS; iter++) {
-    const cooling = 1 - iter / ITERATIONS;
-
-    // Repulsion between all pairs (3D)
-    for (let i = 0; i < pos.length; i++) {
-      for (let j = i + 1; j < pos.length; j++) {
-        const dx = pos[j].x - pos[i].x;
-        const dy = pos[j].y - pos[i].y;
-        const dz = pos[j].z - pos[i].z;
-        const dist = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
-        const force = REPULSION / (dist * dist) * cooling;
-        const fx = (dx / dist) * force;
-        const fy = (dy / dist) * force;
-        const fz = (dz / dist) * force;
-        pos[i].vx -= fx; pos[i].vy -= fy; pos[i].vz -= fz;
-        pos[j].vx += fx; pos[j].vy += fy; pos[j].vz += fz;
+  for (let iter = 0; iter < STEPS; iter++) {
+    const cool = 1 - iter / STEPS;
+    for (let i = 0; i < p.length; i++) {
+      for (let j = i + 1; j < p.length; j++) {
+        const dx = p[j].x - p[i].x, dy = p[j].y - p[i].y, dz = p[j].z - p[i].z;
+        const d = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+        const f = REP / (d * d) * cool;
+        const fx = dx / d * f, fy = dy / d * f, fz = dz / d * f;
+        p[i].vx -= fx; p[i].vy -= fy; p[i].vz -= fz;
+        p[j].vx += fx; p[j].vy += fy; p[j].vz += fz;
       }
     }
-
-    // Attraction along edges
-    for (const edge of edges) {
-      const si = nodes.findIndex(n => n.id === edge.source);
-      const ti = nodes.findIndex(n => n.id === edge.target);
+    for (const e of edges) {
+      const si = nodes.findIndex(n => n.id === e.source);
+      const ti = nodes.findIndex(n => n.id === e.target);
       if (si < 0 || ti < 0) continue;
-      const dx = pos[ti].x - pos[si].x;
-      const dy = pos[ti].y - pos[si].y;
-      const dz = pos[ti].z - pos[si].z;
-      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
-      const force = dist * ATTRACTION * cooling;
-      pos[si].vx += (dx / dist) * force;
-      pos[si].vy += (dy / dist) * force;
-      pos[si].vz += (dz / dist) * force;
-      pos[ti].vx -= (dx / dist) * force;
-      pos[ti].vy -= (dy / dist) * force;
-      pos[ti].vz -= (dz / dist) * force;
+      const dx = p[ti].x - p[si].x, dy = p[ti].y - p[si].y, dz = p[ti].z - p[si].z;
+      const d = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+      const f = d * ATT * cool;
+      p[si].vx += dx / d * f; p[si].vy += dy / d * f; p[si].vz += dz / d * f;
+      p[ti].vx -= dx / d * f; p[ti].vy -= dy / d * f; p[ti].vz -= dz / d * f;
     }
-
-    // Center gravity (keep nodes loosely centered)
-    for (const p of pos) {
-      p.vx += (-p.x) * CENTER_STRENGTH * cooling;
-      p.vy += (-p.y) * CENTER_STRENGTH * cooling;
-      p.vz += (-p.z) * CENTER_STRENGTH * cooling;
-    }
-
-    // Damping + velocity
-    for (const p of pos) {
-      p.vx *= DAMPING;
-      p.vy *= DAMPING;
-      p.vz *= DAMPING;
-      const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy + p.vz * p.vz);
-      if (speed > MAX_SPEED) {
-        p.vx = (p.vx / speed) * MAX_SPEED;
-        p.vy = (p.vy / speed) * MAX_SPEED;
-        p.vz = (p.vz / speed) * MAX_SPEED;
-      }
-      p.x += p.vx;
-      p.y += p.vy;
-      p.z += p.vz;
+    for (const q of p) {
+      q.vx += -q.x * CENTER * cool; q.vy += -q.y * CENTER * cool; q.vz += -q.z * CENTER * cool;
+      q.vx *= DAMP; q.vy *= DAMP; q.vz *= DAMP;
+      const sp = Math.sqrt(q.vx * q.vx + q.vy * q.vy + q.vz * q.vz);
+      if (sp > MAX_V) { q.vx = q.vx / sp * MAX_V; q.vy = q.vy / sp * MAX_V; q.vz = q.vz / sp * MAX_V; }
+      q.x += q.vx; q.y += q.vy; q.z += q.vz;
     }
   }
-
-  return pos;
+  return p;
 }
 
-// === Helpers ===
-function getConnectedNodeIds(nodeId: string, edges: GraphEdge[]): Set<string> {
-  const ids = new Set<string>();
-  for (const edge of edges) {
-    if (edge.source === nodeId) ids.add(edge.target);
-    if (edge.target === nodeId) ids.add(edge.source);
-  }
-  return ids;
+function connectedIds(nodeId: string, edges: GraphEdge[]): Set<string> {
+  const s = new Set<string>();
+  for (const e of edges) { if (e.source === nodeId) s.add(e.target); if (e.target === nodeId) s.add(e.source); }
+  return s;
 }
 
-// === Edge Line (using THREE.Line via primitive) ===
-function EdgeLine({ from, to, highlight, dim }: {
-  from: Position3D; to: Position3D;
-  highlight: boolean; dim: boolean;
-}) {
-  const opacity = dim ? 0.03 : highlight ? 0.45 : 0.1;
+// 按连接度计算节点半径（Obsidian 风格：连接越多越大）
+function calcRadius(nodeId: string, edges: GraphEdge[]): number {
+  let deg = 0;
+  for (const e of edges) { if (e.source === nodeId || e.target === nodeId) deg++; }
+  // 2-10 之间，连接度越高半径越大
+  return 3 + Math.min(deg, 12) * 0.7;
+}
 
+// ===== 连线 =====
+function Edge({ from, to, highlight, dim }: { from: Pos3D; to: Pos3D; highlight: boolean; dim: boolean }) {
+  const opacity = dim ? 0.02 : highlight ? 0.5 : 0.08;
   const line = useMemo(() => {
-    const geo = new THREE.BufferGeometry();
-    const vertices = new Float32Array([
-      from.x, from.y, from.z,
-      to.x, to.y, to.z,
-    ]);
-    geo.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    const mat = new THREE.LineBasicMaterial({
-      color: '#f0c040',
-      transparent: true,
-      opacity,
-    });
-    return new THREE.Line(geo, mat);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array([from.x, from.y, from.z, to.x, to.y, to.z]), 3));
+    const m = new THREE.LineBasicMaterial({ color: '#a8a0b8', transparent: true, opacity, depthWrite: false });
+    return new THREE.Line(g, m);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [from.x, from.y, from.z, to.x, to.y, to.z, opacity]);
-
   return <primitive object={line} />;
 }
 
-// === Pulsing glow ring ===
-function GlowRing({ color }: { color: string }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-
-  useFrame(({ clock }) => {
-    if (meshRef.current) {
-      const t = clock.getElapsedTime();
-      const s = 1 + 0.15 * Math.sin(t * 2);
-      meshRef.current.scale.setScalar(s);
-      (meshRef.current.material as THREE.MeshBasicMaterial).opacity = 0.15 + 0.1 * Math.sin(t * 2);
-    }
-  });
-
-  return (
-    <mesh ref={meshRef}>
-      <sphereGeometry args={[10, 16, 16]} />
-      <meshBasicMaterial color={color} transparent opacity={0.15} depthWrite={false} />
-    </mesh>
-  );
+// ===== 节点（统一为球体，Obsidian 风格） =====
+const SPHERE_CACHE = new Map<number, THREE.SphereGeometry>();
+function getSphere(r: number) {
+  if (!SPHERE_CACHE.has(r)) SPHERE_CACHE.set(r, new THREE.SphereGeometry(r, 16, 16));
+  return SPHERE_CACHE.get(r)!;
 }
 
-// === Shared geometries (prevent re-creation on each render) ===
-const SPHERE_GEO = new THREE.SphereGeometry(7, 20, 20);
-const BOX_GEO = new THREE.BoxGeometry(12, 12, 12);
-
-// === Node Mesh ===
-function NodeMesh({ node, position, color, isHovered, isDimmed, showLabel, onHover }: {
-  node: GraphNode;
-  position: Position3D;
-  color: string;
-  isHovered: boolean;
-  isDimmed: boolean;
-  showLabel: boolean;
-  onHover: (id: string | null) => void;
+function NodeDot({ node, pos, color, radius, isHovered, isDimmed, onHover }: {
+  node: GraphNode; pos: Pos3D; color: string; radius: number;
+  isHovered: boolean; isDimmed: boolean; onHover: (id: string | null) => void;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
 
   useFrame(({ clock }) => {
     if (meshRef.current) {
       if (isHovered) {
-        const s = 1 + 0.05 * Math.sin(clock.getElapsedTime() * 3);
+        const s = 1 + 0.1 * Math.sin(clock.getElapsedTime() * 2.5);
         meshRef.current.scale.setScalar(s);
       } else {
         meshRef.current.scale.setScalar(1);
@@ -174,46 +107,43 @@ function NodeMesh({ node, position, color, isHovered, isDimmed, showLabel, onHov
     }
   });
 
-  const geometry = node.type === 'note' ? BOX_GEO : SPHERE_GEO;
-  const labelY = node.type === 'note' ? -10 : -8;
-
   return (
-    <group position={[position.x, position.y, position.z]}>
-      {/* Glow ring on hover */}
-      {isHovered && <GlowRing color={color} />}
+    <group position={[pos.x, pos.y, pos.z]}>
+      {/* 外发光环（悬停时） */}
+      {isHovered && (
+        <mesh>
+          <sphereGeometry args={[radius * 2.5, 16, 16]} />
+          <meshBasicMaterial color={color} transparent opacity={0.08} depthWrite={false} />
+        </mesh>
+      )}
 
-      {/* Main mesh */}
+      {/* 核心球体 */}
       <mesh
         ref={meshRef}
-        geometry={geometry}
+        geometry={getSphere(radius)}
         onPointerOver={(e) => { e.stopPropagation(); onHover(node.id); }}
         onPointerOut={() => onHover(null)}
       >
-        <meshStandardMaterial
+        <meshBasicMaterial
           color={color}
-          roughness={0.3}
-          metalness={0.1}
           transparent
-          opacity={isDimmed ? 0.2 : 0.9}
-          emissive={isHovered ? color : '#000'}
-          emissiveIntensity={isHovered ? 0.4 : 0}
+          opacity={isDimmed ? 0.1 : isHovered ? 1 : 0.65}
         />
       </mesh>
 
-      {/* HTML label — always faces camera via Html billboard */}
-      {(showLabel || isHovered) && (
-        <Html center distanceFactor={50} position={[0, labelY, 0]}>
+      {/* 标签：仅悬停时用 Html 显示 */}
+      {isHovered && (
+        <Html center distanceFactor={60} position={[0, radius + 4, 0]}>
           <div style={{
             fontSize: 10,
             color: '#f0e8da',
-            background: 'rgba(10,14,26,0.85)',
-            padding: '2px 6px',
+            background: 'rgba(10,14,26,0.9)',
+            padding: '2px 8px',
             borderRadius: 4,
             whiteSpace: 'nowrap',
             fontWeight: 600,
             pointerEvents: 'none',
-            border: '1px solid rgba(255,255,255,0.08)',
-            opacity: isDimmed ? 0.3 : 1,
+            border: '1px solid rgba(255,255,255,0.1)',
           }}>
             {node.label}
           </div>
@@ -223,114 +153,69 @@ function NodeMesh({ node, position, color, isHovered, isDimmed, showLabel, onHov
   );
 }
 
-// === Camera Auto-Rotate Controller ===
-function CameraController({ autoRotate }: { autoRotate: boolean }) {
-  const controlsRef = useRef<any>(null);
-
+// ===== OrbitControls 封装（自动旋转） =====
+function CameraCtrl({ active }: { active: boolean }) {
+  const ref = useRef<any>(null);
   useEffect(() => {
-    if (controlsRef.current) {
-      controlsRef.current.autoRotate = autoRotate;
-      controlsRef.current.autoRotateSpeed = 0.8;
-    }
-  }, [autoRotate]);
-
-  return (
-    <OrbitControls
-      ref={controlsRef}
-      enableDamping
-      dampingFactor={0.08}
-      minDistance={100}
-      maxDistance={1500}
-      autoRotate={autoRotate}
-      autoRotateSpeed={0.8}
-    />
-  );
+    if (ref.current) { ref.current.autoRotate = active; ref.current.autoRotateSpeed = 0.6; }
+  }, [active]);
+  return <OrbitControls ref={ref} enableDamping dampingFactor={0.06} minDistance={80} maxDistance={1200} autoRotate={active} autoRotateSpeed={0.6} />;
 }
 
-// === Scene ===
-function GraphScene({ data, showLabels, hoveredId, onHover }: {
-  data: GraphData;
-  showLabels: boolean;
-  hoveredId: string | null;
-  onHover: (id: string | null) => void;
-}) {
+// ===== 场景 =====
+function Scene({ data, hoveredId, onHover }: { data: GraphData; hoveredId: string | null; onHover: (id: string | null) => void }) {
   const { size } = useThree();
-  const [userInteracted, setUserInteracted] = useState(false);
-  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [interacted, setInteracted] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const simSize = Math.min(size.width, size.height) * 0.4;
 
-  // Re-simulate when data or viewport size changes
-  const simSize = Math.min(size.width, size.height) * 0.45;
-  const positions = useMemo(
-    () => simulate3D(data.nodes, data.edges, simSize),
-    [data, simSize],
-  );
+  const positions = useMemo(() => simulate(data.nodes, data.edges, simSize), [data, simSize]);
+  const hoverConnected = hoveredId ? connectedIds(hoveredId, data.edges) : null;
 
-  const connectedIds = hoveredId ? getConnectedNodeIds(hoveredId, data.edges) : null;
+  // 预计算每个节点的半径
+  const radiusMap = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const n of data.nodes) m.set(n.id, calcRadius(n.id, data.edges));
+    return m;
+  }, [data]);
 
-  // Reset auto-rotate idle timer on user interaction
-  const handleStart = useCallback(() => {
-    setUserInteracted(true);
-    if (idleTimer.current) clearTimeout(idleTimer.current);
-    idleTimer.current = setTimeout(() => setUserInteracted(false), 3000);
+  const onPointer = useCallback(() => {
+    setInteracted(true);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setInteracted(false), 4000);
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (idleTimer.current) clearTimeout(idleTimer.current);
-    };
-  }, []);
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
   return (
     <>
-      {/* Ambient + directional lights for 3D depth */}
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[200, 300, 200]} intensity={1.0} />
-      <directionalLight position={[-200, -100, -200]} intensity={0.3} />
-      <pointLight position={[0, 0, 300]} intensity={0.2} />
+      <ambientLight intensity={0.8} />
+      <pointLight position={[0, 0, 400]} intensity={0.3} />
 
-      <CameraController autoRotate={!userInteracted} />
+      <CameraCtrl active={!interacted} />
 
-      {/* Interaction tracking group */}
-      <group onPointerDown={handleStart} onPointerUp={handleStart}>
-        {/* Edges */}
-        {positions.length > 0 && data.edges.map((edge, i) => {
-          const si = data.nodes.findIndex(n => n.id === edge.source);
-          const ti = data.nodes.findIndex(n => n.id === edge.target);
+      <group onPointerDown={onPointer} onPointerUp={onPointer}>
+        {/* 连线 */}
+        {positions.length > 0 && data.edges.map((e, i) => {
+          const si = data.nodes.findIndex(n => n.id === e.source);
+          const ti = data.nodes.findIndex(n => n.id === e.target);
           if (si < 0 || ti < 0) return null;
-          const isConnected = hoveredId !== null
-            && (edge.source === hoveredId || edge.target === hoveredId);
-          const isDimmed = hoveredId !== null && !isConnected;
-          return (
-            <EdgeLine
-              key={`edge-${i}`}
-              from={positions[si]}
-              to={positions[ti]}
-              highlight={isConnected}
-              dim={isDimmed}
-            />
-          );
+          const conn = hoveredId !== null && (e.source === hoveredId || e.target === hoveredId);
+          const dim = hoveredId !== null && !conn;
+          return <Edge key={`e${i}`} from={positions[si]} to={positions[ti]} highlight={conn} dim={dim} />;
         })}
 
-        {/* Nodes */}
-        {positions.length > 0 && data.nodes.map((node, i) => {
-          const pos = positions[i];
-          if (!pos) return null;
-          const isHovered = hoveredId === node.id;
-          const isDimmed = hoveredId !== null
-            && node.id !== hoveredId
-            && !(connectedIds?.has(node.id));
-          const color = SUBJECT_COLORS[node.subject] || '#666';
-
+        {/* 节点 */}
+        {positions.length > 0 && data.nodes.map((n, i) => {
+          const p = positions[i]; if (!p) return null;
+          const isHov = hoveredId === n.id;
+          const isDim = hoveredId !== null && n.id !== hoveredId && !(hoverConnected?.has(n.id));
+          const color = SUBJECT_COLORS[n.subject] || '#666';
           return (
-            <NodeMesh
-              key={node.id}
-              node={node}
-              position={pos}
-              color={color}
-              isHovered={isHovered}
-              isDimmed={isDimmed}
-              showLabel={showLabels}
-              onHover={onHover}
+            <NodeDot
+              key={n.id} node={n} pos={p} color={color}
+              radius={radiusMap.get(n.id) || 4}
+              isHovered={isHov} isDimmed={isDim} onHover={onHover}
             />
           );
         })}
@@ -339,133 +224,53 @@ function GraphScene({ data, showLabels, hoveredId, onHover }: {
   );
 }
 
-// === Main Exported Component ===
-interface Props {
-  data: GraphData;
-}
+// ===== 主组件 =====
+interface Props { data: GraphData; }
 
 export default function KnowledgeGraph3D({ data }: Props) {
-  const [showLabels, setShowLabels] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   return (
     <div style={{
-      width: '100%',
-      height: '100%',
-      minHeight: 400,
-      position: 'relative',
-      borderRadius: 16,
-      overflow: 'hidden',
+      width: '100%', height: '100%', minHeight: 400,
+      position: 'relative', borderRadius: 16, overflow: 'hidden',
     }}>
-      {/* Controls overlay */}
-      <div style={{
-        position: 'absolute', top: 12, right: 12, zIndex: 10,
-        display: 'flex', gap: 8, alignItems: 'center',
-      }}>
-        {/* Hovered node info */}
-        {hoveredId && (
-          <span style={{
-            fontSize: 11, color: '#f0e8da',
-            background: 'rgba(10,14,26,0.85)',
-            padding: '4px 10px', borderRadius: 6,
-          }}>
-            {data.nodes.find(n => n.id === hoveredId)?.label}
-          </span>
-        )}
-        <button
-          onClick={() => setShowLabels(!showLabels)}
-          style={{
-            padding: '5px 14px', borderRadius: 6,
-            border: '1px solid rgba(255,255,255,0.12)',
-            background: 'rgba(10,14,26,0.85)',
-            color: showLabels ? '#f0c040' : '#a8a0b8',
-            fontSize: 11, cursor: 'pointer',
-            fontWeight: 600,
-            transition: 'all 0.15s',
-          }}
-        >
-          {showLabels ? '隐藏标签' : '显示标签'}
-        </button>
+      {/* 悬停节点提示 */}
+      <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 10 }}>
+        <span style={{ fontSize: 10, color: '#6b6480' }}>
+          悬停查看连接 · 拖拽旋转 · 滚轮缩放
+        </span>
       </div>
 
-      {/* Empty state */}
       {!data.nodes.length && (
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          height: '100%', color: '#6b6480', fontSize: 14,
-        }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#6b6480', fontSize: 14 }}>
           暂无数据
         </div>
       )}
 
-      {/* Three.js Canvas */}
       {data.nodes.length > 0 && (
         <Canvas
-          camera={{ position: [100, 80, 300], fov: 50 }}
+          camera={{ position: [80, 60, 250], fov: 45 }}
           dpr={[1, 2]}
           style={{ background: 'radial-gradient(ellipse at center, #111827 0%, #0a0e1a 100%)' }}
         >
-          <GraphScene
-            data={data}
-            showLabels={showLabels}
-            hoveredId={hoveredId}
-            onHover={setHoveredId}
-          />
+          <Scene data={data} hoveredId={hoveredId} onHover={setHoveredId} />
         </Canvas>
       )}
 
-      {/* Subject legend */}
+      {/* 图例（底部） */}
       <div style={{
-        position: 'absolute', bottom: 12, left: 12,
-        display: 'flex', gap: 12, flexWrap: 'wrap',
-        background: 'rgba(10,14,26,0.85)',
-        padding: '6px 12px', borderRadius: 8,
-        border: '1px solid rgba(255,255,255,0.06)',
-        backdropFilter: 'blur(8px)',
+        position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)',
+        display: 'flex', gap: 16, alignItems: 'center',
+        background: 'rgba(10,14,26,0.8)', padding: '5px 14px', borderRadius: 8,
+        border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(8px)',
       }}>
-        {Object.entries(SUBJECT_COLORS).map(([subject, color]) => (
-          <div key={subject} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <div style={{
-              width: 8, height: 8, borderRadius: 2,
-              background: color,
-              boxShadow: `0 0 6px ${color}66`,
-            }} />
-            <span style={{ fontSize: 10, color: '#a8a0b8' }}>{subject}</span>
+        {Object.entries(SUBJECT_COLORS).map(([s, c]) => (
+          <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: c, boxShadow: `0 0 4px ${c}66` }} />
+            <span style={{ fontSize: 9, color: '#6b6480' }}>{s}</span>
           </div>
         ))}
-      </div>
-
-      {/* Type legend */}
-      <div style={{
-        position: 'absolute', bottom: 12, right: 12,
-        display: 'flex', gap: 12,
-        background: 'rgba(10,14,26,0.85)',
-        padding: '6px 12px', borderRadius: 8,
-        border: '1px solid rgba(255,255,255,0.06)',
-        backdropFilter: 'blur(8px)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <div style={{
-            width: 10, height: 10, borderRadius: 2,
-            background: 'rgba(168,160,184,0.6)',
-          }} />
-          <span style={{ fontSize: 10, color: '#a8a0b8' }}>笔记</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <div style={{
-            width: 10, height: 10, borderRadius: '50%',
-            background: 'rgba(168,160,184,0.6)',
-          }} />
-          <span style={{ fontSize: 10, color: '#a8a0b8' }}>知识点</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <div style={{
-            width: 12, height: 2,
-            background: 'rgba(240,192,64,0.5)',
-            borderRadius: 1,
-          }} />
-          <span style={{ fontSize: 10, color: '#a8a0b8' }}>引用</span>
-        </div>
       </div>
     </div>
   );

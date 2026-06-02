@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 
 // ===== Subjects =====
 export const SUBJECTS = [
@@ -529,14 +529,101 @@ export interface NewNoteInput {
   images?: string[];
 }
 
+// 是否是后端模式（数据由后端管理）
+let backendMode = false;
+
+export function isKnowledgeBackendMode(): boolean {
+  return backendMode;
+}
+
+async function loadFromBackend(): Promise<{
+  notes: Note[]; knowledgePoints: KnowledgePoint[]; analysis: LinkAnalysisResult;
+  graph: GraphData; subjectStats: SubjectStat[];
+} | null> {
+  try {
+    const api = await import('./api');
+
+    const [notes, knowledgePoints, linkAnalysis, graphData, subjectStatsData] = await Promise.all([
+      api.fetchNotes(),
+      api.fetchKnowledgePoints(),
+      api.fetchKnowledgeAnalysis().catch(() => null),
+      api.fetchKnowledgeGraph().catch(() => null),
+      api.fetchSubjectStats().catch(() => null),
+    ]);
+
+    backendMode = true;
+
+    const analysis: LinkAnalysisResult = linkAnalysis || {
+      totalNotes: notes.length,
+      totalKnowledgePoints: knowledgePoints.length,
+      totalLinks: 0,
+      validLinks: 0,
+      brokenLinks: 0,
+      bySubject: {} as Record<string, SubjectLinkStats>,
+      brokenDetails: [],
+      missingReferences: [],
+      knowledgePointNames: knowledgePoints.map(kp => kp.name),
+    };
+
+    const graph: GraphData = graphData || { nodes: [], edges: [] };
+
+    const subjectStatsList: SubjectStat[] = subjectStatsData || SUBJECTS.map(name => ({
+      name,
+      color: SUBJECT_COLORS[name] || '#666',
+      noteCount: 0, kpCount: 0, linkCount: 0, validCount: 0, brokenCount: 0,
+    }));
+
+    return { notes, knowledgePoints, analysis, graph, subjectStats: subjectStatsList };
+  } catch {
+    return null;
+  }
+}
+
 export function useKnowledgeBase() {
   const [extraNotes, setExtraNotes] = useState<NewNoteInput[]>([]);
+  const [backendData, setBackendData] = useState<{
+    notes: Note[]; knowledgePoints: KnowledgePoint[];
+    analysis: LinkAnalysisResult; graph: GraphData; subjectStats: SubjectStat[];
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const addNotes = useCallback((notes: NewNoteInput[]) => {
-    setExtraNotes(prev => [...prev, ...notes]);
+  // 启动时尝试从后端加载
+  useEffect(() => {
+    loadFromBackend().then(data => {
+      if (data) setBackendData(data);
+      setLoading(false);
+    });
+  }, []);
+
+  const addNotes = useCallback(async (notes: NewNoteInput[]) => {
+    if (backendMode) {
+      // 后端模式：写入 .md 文件
+      const { createNote } = await import('./api');
+      for (const note of notes) {
+        try {
+          await createNote({
+            name: note.name,
+            title: note.title,
+            subject: note.subject,
+            content: note.content,
+            images: note.images,
+          });
+        } catch (e) {
+          console.warn(`创建笔记失败: ${note.name}`, e);
+        }
+      }
+      // 重新加载后端数据
+      const data = await loadFromBackend();
+      if (data) setBackendData(data);
+    } else {
+      setExtraNotes(prev => [...prev, ...notes]);
+    }
   }, []);
 
   const data = useMemo(() => {
+    // 后端优先
+    if (backendData) return backendData;
+
     const baseNotes = buildNotes();
     const allNotes: Note[] = [
       ...baseNotes,
@@ -547,12 +634,18 @@ export function useKnowledgeBase() {
     ];
     const knowledgePoints = buildKnowledgePoints();
     buildReferences(allNotes, knowledgePoints);
-    const analysis = analyzeLinks(allNotes, knowledgePoints);
-    const graph = buildGraph(allNotes, knowledgePoints);
-    const subjectStats = getSubjectStats(analysis);
+    const analysisResult = analyzeLinks(allNotes, knowledgePoints);
+    const graphResult = buildGraph(allNotes, knowledgePoints);
+    const statsResult = getSubjectStats(analysisResult);
 
-    return { notes: allNotes, knowledgePoints, analysis, graph, subjectStats };
-  }, [extraNotes]);
+    return {
+      notes: allNotes,
+      knowledgePoints,
+      analysis: analysisResult,
+      graph: graphResult,
+      subjectStats: statsResult,
+    };
+  }, [backendData, extraNotes]);
 
-  return { ...data, addNotes };
+  return { ...data, addNotes, loading };
 }

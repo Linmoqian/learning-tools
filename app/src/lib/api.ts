@@ -1,4 +1,5 @@
 import type { Task, DailyUserState, GachaRecord, TaskRejectionLog, ScheduleItem, ScheduleSlot, AppSettings } from './types';
+import type { Note, KnowledgePoint, LinkAnalysisResult, GraphData, SubjectStat, SearchResult } from './knowledge';
 
 const DEFAULT_BACKEND_URL = 'http://127.0.0.1:8900';
 
@@ -241,4 +242,81 @@ export async function updateSettings(settings: AppSettings): Promise<boolean> {
 
 export async function resetSettings(): Promise<boolean> {
   return request<boolean>('/api/settings/reset', { method: 'PUT' });
+}
+
+// ===== 知识库 =====
+export async function fetchNotes(): Promise<Note[]> {
+  return request<Note[]>('/api/knowledge/notes');
+}
+
+export async function getNote(name: string): Promise<Note> {
+  return request<Note>(`/api/knowledge/notes/${encodeURIComponent(name)}`);
+}
+
+export async function createNote(note: {
+  name: string; title: string; subject: string; content: string;
+  tags?: string[]; wikiLinks?: string[]; images?: string[];
+}): Promise<Note> {
+  return request<Note>('/api/knowledge/notes', {
+    method: 'POST', body: JSON.stringify(note),
+  });
+}
+
+export async function updateNote(name: string, note: Partial<Note>): Promise<Note> {
+  return request<Note>(`/api/knowledge/notes/${encodeURIComponent(name)}`, {
+    method: 'PUT', body: JSON.stringify(note),
+  });
+}
+
+export async function deleteNote(name: string): Promise<boolean> {
+  return request<boolean>(`/api/knowledge/notes/${encodeURIComponent(name)}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function fetchKnowledgePoints(): Promise<KnowledgePoint[]> {
+  return request<KnowledgePoint[]>('/api/knowledge/points');
+}
+
+export async function createKnowledgePoint(kp: {
+  name: string; subject: string; description: string; relatedPoints?: string[];
+}): Promise<KnowledgePoint> {
+  return request<KnowledgePoint>('/api/knowledge/points', {
+    method: 'POST', body: JSON.stringify(kp),
+  });
+}
+
+export async function updateKnowledgePoint(id: number, kp: {
+  name: string; subject: string; description: string; relatedPoints?: string[];
+}): Promise<boolean> {
+  return request<boolean>(`/api/knowledge/points/${id}`, {
+    method: 'PUT', body: JSON.stringify(kp),
+  });
+}
+
+export async function deleteKnowledgePoint(id: number): Promise<boolean> {
+  return request<boolean>(`/api/knowledge/points/${id}`, { method: 'DELETE' });
+}
+
+export async function fetchKnowledgeAnalysis(): Promise<LinkAnalysisResult> {
+  return request<LinkAnalysisResult>('/api/knowledge/analysis');
+}
+
+export async function fetchKnowledgeGraph(): Promise<GraphData> {
+  return request<GraphData>('/api/knowledge/graph');
+}
+
+export async function fetchSubjectStats(): Promise<SubjectStat[]> {
+  return request<SubjectStat[]>('/api/knowledge/subjects');
+}
+
+export async function searchKnowledge(query: string, subjectFilter?: string): Promise<SearchResult[]> {
+  return request<SearchResult[]>('/api/knowledge/search', {
+    method: 'POST',
+    body: JSON.stringify({ query, subjectFilter: subjectFilter || null }),
+  });
+}
+
+export async function initExampleNotes(): Promise<boolean> {
+  return request<boolean>('/api/knowledge/init-examples', { method: 'POST' });
 }

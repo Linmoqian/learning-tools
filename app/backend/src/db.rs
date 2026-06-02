@@ -137,6 +137,14 @@ fn create_tables(conn: &Connection) -> Result<(), rusqlite::Error> {
             key   TEXT PRIMARY KEY,
             value TEXT NOT NULL
         );
+
+        CREATE TABLE IF NOT EXISTS knowledge_points (
+            id             INTEGER PRIMARY KEY AUTOINCREMENT,
+            name           TEXT NOT NULL UNIQUE,
+            subject        TEXT NOT NULL DEFAULT '计算机',
+            description    TEXT NOT NULL DEFAULT '',
+            related_points TEXT NOT NULL DEFAULT '[]'
+        );
     ")?;
     Ok(())
 }

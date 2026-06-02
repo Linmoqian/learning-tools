@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import gsap from 'gsap';
 import { Clock, Sparkles, ListOrdered } from 'lucide-react';
 import GachaButton from '../components/GachaButton';
 import TaskCard from '../components/TaskCard';
@@ -19,6 +20,22 @@ import {
 
 export default function GachaPage() {
   const { dispatch, getAvailableTasks } = useStore();
+  const pageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = pageRef.current;
+    if (!el) return;
+    const title = el.querySelector('h1');
+    const content = el.querySelector('[data-gacha-content]');
+    const tl = gsap.timeline();
+    if (title) {
+      tl.fromTo(title, { y: -20, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.7)' });
+    }
+    if (content) {
+      tl.fromTo(content.children, { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, stagger: 0.07, ease: 'power2.out' }, '-=0.1');
+    }
+    return () => { tl.kill(); };
+  }, []);
 
   const [minutes, setMinutes] = useState(25);
   const [sessionCtx] = useState<GachaSessionContext>(createSessionContext());
@@ -124,7 +141,7 @@ export default function GachaPage() {
   const planSummary = plans.map(p => `${p.count}×${GACHA_POOL_NAMES[p.pool]}`).join(' + ');
 
   return (
-    <div style={{ padding: '24px 32px', height: '100%', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto' }}>
+    <div ref={pageRef} style={{ padding: '24px 32px', height: '100%', display: 'flex', flexDirection: 'column', gap: 16, overflow: 'auto' }}>
       {/* Header */}
       <div>
         <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -135,7 +152,7 @@ export default function GachaPage() {
       </div>
 
       {/* Main content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
+      <div data-gacha-content style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
         {/* Time input + draw button */}
         <div
           className="glass"

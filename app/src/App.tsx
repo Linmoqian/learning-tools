@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Sparkles, ListTodo, Trash2, CalendarDays, BookOpen } from 'lucide-react';
-import { StoreProvider } from './lib/store';
+import gsap from 'gsap';
+import { Sparkles, ListTodo, Trash2, CalendarDays, BookOpen, Settings } from 'lucide-react';
+import { StoreProvider, useStore } from './lib/store';
 import GachaPage from './pages/GachaPage';
 import TasksPage from './pages/TasksPage';
 import DiscardPage from './pages/DiscardPage';
 import SchedulePage from './pages/SchedulePage';
 import KnowledgePage from './pages/KnowledgePage';
+import SettingsPage from './pages/SettingsPage';
 
 const NAV_ITEMS = [
   { path: '/gacha', label: '抽卡', icon: Sparkles },
@@ -15,15 +17,74 @@ const NAV_ITEMS = [
   { path: '/knowledge', label: '知识库', icon: BookOpen },
   { path: '/discard', label: '弃牌堆', icon: Trash2 },
   { path: '/schedule', label: '日程', icon: CalendarDays },
+  { path: '/settings', label: '设置', icon: Settings },
 ];
 
 function AppShell() {
   const [expanded, setExpanded] = useState(false);
+  const { data } = useStore();
+  const navRef = useRef<HTMLDivElement>(null);
+
+  // 应用保存的主题
+  useEffect(() => {
+    const { theme } = data.settings;
+    const root = document.documentElement;
+    root.style.setProperty('--gold', theme.primaryColor);
+    root.style.setProperty('--gold-light', theme.primaryColorLight);
+    root.style.setProperty('--gold-dark', theme.primaryColorDark);
+    root.style.setProperty('--text-gold', theme.primaryColor);
+    const rgb = theme.primaryColor
+      ? `${parseInt(theme.primaryColor.slice(1, 3), 16)}, ${parseInt(theme.primaryColor.slice(3, 5), 16)}, ${parseInt(theme.primaryColor.slice(5, 7), 16)}`
+      : '240, 192, 64';
+    root.style.setProperty('--shadow-glow', `0 0 20px rgba(${rgb}, 0.3)`);
+    root.style.setProperty('--shadow-btn', `0 4px 16px rgba(${rgb}, 0.25)`);
+  }, [data.settings.theme]);
+
+  // GSAP 导航项弹性交错入场
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const links = el.querySelectorAll('a');
+    if (!links.length) return;
+    gsap.fromTo(
+      links,
+      { x: -24, opacity: 0, scale: 0.9 },
+      {
+        x: 0,
+        opacity: 1,
+        scale: 1,
+        duration: 0.45,
+        ease: 'back.out(1.7)',
+        stagger: 0.06,
+      },
+    );
+  }, []);
+
+  // GSAP 导航项弹性悬停
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const links = Array.from(el.querySelectorAll('a'));
+    const handlers = links.map(link => {
+      const onEnter = () => gsap.to(link, { scale: 1.06, duration: 0.3, ease: 'back.out(2)' });
+      const onLeave = () => gsap.to(link, { scale: 1, duration: 0.3, ease: 'elastic.out(1, 0.3)' });
+      link.addEventListener('mouseenter', onEnter);
+      link.addEventListener('mouseleave', onLeave);
+      return { link, onEnter, onLeave };
+    });
+    return () => {
+      handlers.forEach(({ link, onEnter, onLeave }) => {
+        link.removeEventListener('mouseenter', onEnter);
+        link.removeEventListener('mouseleave', onLeave);
+      });
+    };
+  }, []);
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       {/* Sidebar */}
       <motion.nav
+        ref={navRef}
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
         animate={{ width: expanded ? 180 : 56 }}
@@ -43,6 +104,7 @@ function AppShell() {
       >
         {/* Logo */}
         <div
+          data-tauri-drag-region
           style={{
             padding: '12px 16px',
             marginBottom: 16,
@@ -50,9 +112,11 @@ function AppShell() {
             alignItems: 'center',
             gap: 10,
             overflow: 'hidden',
+            cursor: 'grab',
           }}
         >
           <div
+            data-tauri-drag-region
             style={{
               width: 28,
               height: 28,
@@ -187,6 +251,20 @@ function AppShell() {
                   style={{ height: '100%' }}
                 >
                   <SchedulePage />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <motion.div
+                  key="settings"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  style={{ height: '100%' }}
+                >
+                  <SettingsPage />
                 </motion.div>
               }
             />

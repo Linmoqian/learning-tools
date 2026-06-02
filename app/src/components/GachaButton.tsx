@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import gsap from 'gsap';
 import { Sparkles } from 'lucide-react';
 
 interface GachaButtonProps {
@@ -10,8 +11,37 @@ interface GachaButtonProps {
 
 export default function GachaButton({ onClick, disabled, label = '抽卡' }: GachaButtonProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
   const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; angle: number; size: number }>>([]);
   const pId = useRef(0);
+
+  // GSAP 呼吸脉冲
+  useEffect(() => {
+    const el = btnRef.current;
+    if (!el || disabled) return;
+    const tl = gsap.timeline({ repeat: -1, yoyo: true });
+    tl.to(el, {
+      scale: 1.03,
+      boxShadow: '0 0 40px rgba(240,192,64,0.45), 0 0 60px rgba(240,192,64,0.15)',
+      duration: 1.8,
+      ease: 'sine.inOut',
+    });
+    return () => { tl.kill(); };
+  }, [disabled]);
+
+  // GSAP 悬停弹性
+  useEffect(() => {
+    const el = btnRef.current;
+    if (!el || disabled) return;
+    const onEnter = () => gsap.to(el, { scale: 1.06, duration: 0.35, ease: 'back.out(2)' });
+    const onLeave = () => gsap.to(el, { scale: 1, duration: 0.4, ease: 'elastic.out(1, 0.3)' });
+    el.addEventListener('mouseenter', onEnter);
+    el.addEventListener('mouseleave', onLeave);
+    return () => {
+      el.removeEventListener('mouseenter', onEnter);
+      el.removeEventListener('mouseleave', onLeave);
+    };
+  }, [disabled]);
 
   const burst = () => {
     const rect = ref.current?.getBoundingClientRect();
@@ -63,18 +93,10 @@ export default function GachaButton({ onClick, disabled, label = '抽卡' }: Gac
       ))}
 
       <motion.button
+        ref={btnRef}
         onClick={handleClick}
         disabled={disabled}
-        whileHover={{ scale: disabled ? 1 : 1.05 }}
-        whileTap={{ scale: disabled ? 1 : 0.95 }}
-        animate={{
-          boxShadow: [
-            '0 0 20px rgba(240,192,64,0.3)',
-            '0 0 40px rgba(240,192,64,0.5)',
-            '0 0 20px rgba(240,192,64,0.3)',
-          ],
-        }}
-        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        whileTap={{ scale: disabled ? 1 : 0.92 }}
         style={{
           width: 180,
           height: 180,

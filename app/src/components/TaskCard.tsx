@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import gsap from 'gsap';
 import { Clock, Zap, Dumbbell, AlertTriangle } from 'lucide-react';
 import { Task } from '../lib/types';
 import { isDdlUrgent } from '../lib/algorithms';
@@ -33,17 +35,35 @@ const resistanceLabel: Record<string, string> = {
 export default function TaskCard({ task, index = 0, onClick, compact = false }: TaskCardProps) {
   const urgent = isDdlUrgent(task);
   const color = profileColorMap[task.taskProfile] || '#2980b9';
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // GSAP 弹性入场
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    gsap.fromTo(
+      el,
+      { y: 40, opacity: 0, scale: 0.85, rotationX: 15 },
+      {
+        y: 0,
+        opacity: 1,
+        scale: 1,
+        rotationX: 0,
+        duration: 0.55,
+        delay: index * 0.08,
+        ease: 'back.out(1.7)',
+      },
+    );
+  }, [index]);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{
-        duration: 0.4,
-        delay: index * 0.1,
-        ease: [0.25, 0.1, 0.25, 1],
-      }}
-      whileHover={{ y: -6, transition: { duration: 0.2 } }}
+      ref={cardRef}
+      drag
+      dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+      dragElastic={0.8}
+      whileDrag={{ scale: 1.05, zIndex: 50, cursor: 'grabbing', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
+      whileHover={{ y: -6, boxShadow: '0 12px 24px rgba(0,0,0,0.3)', transition: { duration: 0.2 } }}
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
       style={{

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Search, Network, BarChart3, ChevronRight,
@@ -6,9 +6,11 @@ import {
 } from 'lucide-react';
 import KnowledgeGraph from '../components/KnowledgeGraph';
 import KnowledgeGraph3D from '../components/KnowledgeGraph3D';
+import FileDropZone from '../components/FileDropZone';
 import {
   useKnowledgeBase, searchItems, SUBJECTS, SUBJECT_COLORS,
 } from '../lib/knowledge';
+import { parseFile, fileToNoteInput } from '../lib/fileParser';
 import type { Note, KnowledgePoint, SubjectStat } from '../lib/knowledge';
 
 type Tab = 'browse' | 'graph' | 'analysis';
@@ -88,8 +90,13 @@ function SubjectCard({ stat, onClick }: { stat: SubjectStat; onClick: () => void
   );
 }
 
-function NoteCard({ note }: { note: Note }) {
+function NoteCard({ note, isUploaded }: { note: Note; isUploaded?: boolean }) {
   const color = SUBJECT_COLORS[note.subject] || '#666';
+  const ext = isUploaded ? note.name.split('.').pop()?.toLowerCase() : null;
+  const fileExtColors: Record<string, string> = {
+    pdf: '#e74c3c', pptx: '#e67e22', docx: '#3498db', md: '#2ecc71',
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -98,11 +105,28 @@ function NoteCard({ note }: { note: Note }) {
       style={{
         padding: 14, borderRadius: 12,
         border: '1px solid rgba(255,255,255,0.06)',
-        borderLeft: `3px solid ${color}`,
+        borderLeft: `3px solid ${isUploaded ? `${color}88` : color}`,
       }}
     >
-      <div style={{ fontSize: 13, fontWeight: 600, color: '#f0e8da', marginBottom: 4 }}>
-        {note.title}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+        {ext && (
+          <span style={{
+            fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 3,
+            background: `${fileExtColors[ext] || '#a8a0b8'}18`,
+            color: fileExtColors[ext] || '#a8a0b8',
+            border: `1px solid ${fileExtColors[ext] || '#a8a0b8'}30`,
+          }}>
+            {ext.toUpperCase()}
+          </span>
+        )}
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#f0e8da' }}>
+          {note.title}
+        </div>
+        {isUploaded && (
+          <span style={{ fontSize: 9, color: '#f0c040', marginLeft: 'auto' }}>
+            已上传
+          </span>
+        )}
       </div>
       <div style={{ fontSize: 11, color: '#6b6480', marginBottom: 6, lineHeight: 1.5 }}>
         {note.content.slice(0, 80)}…
@@ -149,8 +173,8 @@ function KnowledgePointCard({ kp }: { kp: KnowledgePoint }) {
   );
 }
 
-function BrowseTab({ notes, knowledgePoints, subjectFilter, setSubjectFilter }:
-  { notes: Note[]; knowledgePoints: KnowledgePoint[]; subjectFilter: string | null; setSubjectFilter: (s: string | null) => void }) {
+function BrowseTab({ notes, knowledgePoints, subjectFilter, setSubjectFilter, uploadedIds }:
+  { notes: Note[]; knowledgePoints: KnowledgePoint[]; subjectFilter: string | null; setSubjectFilter: (s: string | null) => void; uploadedIds: Set<string> }) {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'all' | 'notes' | 'knowledge'>('all');
@@ -242,7 +266,7 @@ function BrowseTab({ notes, knowledgePoints, subjectFilter, setSubjectFilter }:
             笔记 ({displayNotes.length})
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
-            {displayNotes.map(note => <NoteCard key={note.id} note={note} />)}
+            {displayNotes.map(note => <NoteCard key={note.id} note={note} isUploaded={uploadedIds.has(note.id)} />)}
           </div>
         </div>
       )}
@@ -410,7 +434,28 @@ export default function KnowledgePage() {
   const [tab, setTab] = useState<Tab>('browse');
   const [subjectFilter, setSubjectFilter] = useState<string | null>(null);
   const [graphView3D, setGraphView3D] = useState(true);
-  const { notes, knowledgePoints, analysis, graph, subjectStats } = useKnowledgeBase();
+  const { notes, knowledgePoints, analysis, graph, subjectStats, addNotes } = useKnowledgeBase();
+  const [processingFiles, setProcessingFiles] = useState(false);
+
+  const handleFileDrop = useCallback(async (files: File[]) => {
+    setProcessingFiles(true);
+    try {
+      const newNotes = await Promise.all(
+        files.map(async (file) => {
+          const parsed = await parseFile(file);
+          return fileToNoteInput(parsed, analysis.knowledgePointNames);
+        }),
+      );
+      addNotes(newNotes);
+    } catch (err) {
+      console.error('文件解析失败:', err);
+    } finally {
+      setProcessingFiles(false);
+    }
+  }, [addNotes, analysis.knowledgePointNames]);
+
+  // Uploaded note IDs start with 'upload_'
+  const uploadedIds = new Set(notes.filter(n => n.id.startsWith('upload_')).map(n => n.id));
 
   return (
     <div style={{ padding: '24px 32px', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
@@ -467,6 +512,9 @@ export default function KnowledgePage() {
               key="browse" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               style={{ height: '100%', overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 16 }}
             >
+              {/* File upload zone */}
+              <FileDropZone onFiles={handleFileDrop} disabled={processingFiles} />
+
               {/* Subject overview */}
               {!subjectFilter && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
@@ -498,6 +546,7 @@ export default function KnowledgePage() {
                 knowledgePoints={knowledgePoints}
                 subjectFilter={subjectFilter}
                 setSubjectFilter={setSubjectFilter}
+                uploadedIds={uploadedIds}
               />
             </motion.div>
           )}

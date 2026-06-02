@@ -4,119 +4,113 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概览
 
-学习工具 monorepo，包含四个子项目：
+桌面学习工具，主体是 Tauri v2 + React 前端 + Rust actix-web 后端。Python 项目是旧版参考。
 
-| 子项目 | 技术栈 | 说明 |
-|--------|--------|------|
-| `app/` | Tauri v2 + React 18 + TypeScript + Vite | 桌面端学习工具（脚手架阶段） |
-| `任务发布系统/` | Python + PySide6 + SQLite | 任务随机发布器（核心项目） |
-| `任务发布系统/StateOS/` | Python + PyQt6 + SQLite | 实时状态管理系统 |
-| `笔记处理系统/` | Python 脚本 + 批处理 | Markdown/维基链接笔记处理工具集 |
+| 模块 | 技术栈 | 状态 |
+|------|--------|------|
+| `app/` (前端) | Tauri v2 + React 18 + TypeScript + Vite | **主力** |
+| `app/backend/` (主后端) | Rust + actix-web + SQLite | **主力** |
+| `app/mineru-service/` (文档转换) | Rust + actix-web | 独立服务 |
+| `app/src-tauri/` (Agent 模块) | Rust + reqwest | **Tauri Command** |
+| `agent/` | Markdown + TypeScript | Agent 提示词模板 |
+| `任务发布系统/` | Python + PySide6 + SQLite | 旧版参考 |
+| `笔记处理系统/` | Python 脚本 | 旧版参考 |
 
-## 核心项目：任务发布系统
-
-### 架构
-
-```
-任务发布系统/
-├── main.py                         # PySide6 应用入口
-├── src/
-│   ├── models/
-│   │   ├── database.py             # SQLite 数据库（版本迁移、CRUD）
-│   │   └── task.py                 # Task 模型、枚举、序列化/反序列化
-│   ├── services/
-│   │   ├── task_service.py         # 加权随机算法、任务依赖/解锁链
-│   │   ├── gacha_service.py       # 抽卡引擎（冷却、换牌、连抽规划）
-│   │   ├── state_service.py       # 每日基调、能量曲线、早睡记录
-│   │   ├── export_service.py      # 数据导出
-│   │   └── ai_import_processor.py # AI分析结果导入
-│   └── ui/
-│       ├── main_window.py          # 主窗口（番茄钟、状态栏、任务卡片）
-│       ├── gacha_window.py         # 抽卡界面（选择弹窗、卡面渲染）
-│       ├── schedule_window.py      # 日程安排
-│       ├── dependency_graph.py     # 任务依赖关系图
-│       └── filter_dialog.py        # 任务过滤
-├── data/
-│   └── task_publisher.db           # SQLite 数据库文件
-├── ai_exports/                     # AI 分析导出目录
-├── ai_imports/                     # AI 分析导入目录
-├── AI_assistant_prompt.md          # AI 分析提示词
-└── 任务随机发布器构思.txt           # 设计文档
-```
-
-### 核心架构模式
-
-**Service 层** 接收 Database 实例，所有业务逻辑集中在 services/：
+## 当前项目架构
 
 ```
-Database → Service (接收 Database) → UI (接收 Service 或 Database)
+app/
+├── src/                             ← React 前端
+│   ├── lib/
+│   │   ├── store.tsx                ← useReducer 状态管理（dispatch 自动同步后端）
+│   │   ├── types.ts                 ← 全部数据模型
+│   │   ├── api.ts                   ← REST API 客户端（38+ 函数）
+│   │   ├── algorithms.ts            ← 加权随机算法（前端副实现）
+│   │   ├── knowledge.ts             ← 知识库（后端优先，mock 降级）
+│   │   ├── mineruClient.ts          ← MinerU 服务 REST 客户端
+│   │   └── fileParser.ts            ← 浏览器端文件解析（pdfjs/mammoth/jszip）
+│   ├── pages/                       ← 路由页面（Gacha / Tasks / Knowledge / etc.）
+│   ├── components/                  ← 通用组件
+│   └── styles/global.css            ← 主题变量（data-theme 切换 dark/light）
+├── backend/                         ← Rust REST 后端（端口 8900）
+│   └── src/
+│       ├── main.rs                  ← 入口 + 路由注册 + CORS
+│       ├── db.rs                    ← SQLite 初始化 + 建表
+│       ├── models/                  ← 数据模型（task/gacha/schedule/state/knowledge）
+│       ├── services/                ← 业务逻辑
+│       │   ├── task_service.rs      ← 加权随机算法 + 链式解锁 + 循环检测
+│       │   ├── gacha_service.rs     ← 连抽规划
+│       │   └── knowledge_service.rs ← .md 文件扫描 + frontmatter 解析 + 链接分析 + 图谱
+│       └── routes/                  ← REST handler（43+ 端点）
+├── mineru-service/                  ← MinerU API 代理（端口 8899，独立服务）
+└── src-tauri/                       ← Tauri Rust（greet + Agent Commands）
+    └── src/agent/
+        ├── commands.rs              ← run_agent / get_api_key_status / save_api_key
+        ├── api_client.rs            ← Claude / OpenAI API 调用
+        ├── key_manager.rs           ← API Key 文件存储
+        └── prompts.rs               ← 5 个编译内嵌的 Agent System Prompt
+
+agent/                               ← Agent 提示词 Markdown 源文件
+└── prompts/                         ← content_reviewer / knowledge_extractor / etc.
 ```
 
-- `database.py`：单例式初始化，`_init_tables()` 创建全部表，`_run_migrations()` 管理版本迁移（当前 v1.5）
-- `Task` 模型：纯数据类，`to_dict()` / `from_dict()` / `from_row()` 三种序列化方式
-- 数据库版本管理通过 `_meta` 表，迁移前自动备份到 `data/backup/`
+## 后端架构模式
 
-### 业务逻辑要点
-
-**加权随机算法** (task_service.py)：
 ```
-最终权重 = 基础权重 × DDL紧急度 × 精力匹配 × 阻力系数 × 成功率 × 拒绝惩罚 × task_profile策略权重 × 冷却因子
+Database (db.rs: init_db + 12张表)
+    ↓
+Service (接收 &Connection，纯业务逻辑)
+    ↓
+Route (actix-web handler，序列化/反序列化)
 ```
 
-**四类 TaskProfile**：
-- `DAILY_HABIT`：每日习惯，策略权重强制 0（不参与抽卡）
-- `WEEKLY_ROUTINE`：每周任务，越接近周末权重越高
-- `DEADLINE_FLEXIBLE`：柔性截止，临近 DDL 权重递增
-- `DEADLINE_PROGRESSIVE`：渐进式截止，固定权重
+- **状态共享**：`web::Data<AppState>` 包含 `Mutex<Connection>` + `notes_dir: PathBuf`
+- **所有路由返回** `ApiResponse<T>` 统一 JSON 信封：`{success, data, error}`
+- **camelCase JSON**：所有 `#[serde(rename_all = "camelCase")]` 对齐前端
+- **笔记文件**：`.md` 文件存储在 `data/notes/`，含 YAML frontmatter（title/subject/tags/images）
 
-**抽卡流程** (gacha_service.py)：
-- 单抽 → 返回 top-3 候选供用户选择
-- 连抽 → 根据总时间自动规划（15-24min→碎片池, 25-89min→番茄池, 90+min→深度池+碎片）
-- 换牌 → 记录拒绝理由，冷却被换任务
-- 连抽规划引擎 `plan_multi_draw(total_minutes)` 控制时间分配
+## 前端架构模式
 
-**依赖解锁链** (task_service.py)：
-- `_chain_unlock()` 递归解锁所有满足前置条件且未完成的任务
-- `detect_cycle()` DFS 检测循环依赖
-- 跳过任务同样触发解锁
+- **状态管理**：`useReducer` + `localStorage`（降级） + 异步同步后端（`store.tsx`）
+- **dispatch 自动同步**：每次 dispatch 同时向后端发 REST 请求（fire-and-forget）
+- **知识库**：`useKnowledgeBase()` 自动检测后端，在线时从后端加载，离线时 mock 数据
+- **主题**：CSS 自定义属性 + `data-theme` 属性切换（dark/light），主色通过设置可调
 
-### 命令
+## 关键算法（三端一致）
+
+- **加权随机**：权重 = 基础 × priority/5 × deadlineUrgency × energyMatch × resistance × successRate × refusalPenalty × profileStrategy × cooldown
+- **连抽规划**：<15min不抽 → 碎片(7min/块) → 番茄(25min) → 深度(50min) + 剩余
+- **链式解锁**：完成任务后递归解锁所有满足前置条件的依赖任务（DFS）
+
+## 常用命令
 
 ```bash
-# 启动任务发布系统
-cd 任务发布系统 && python main.py
+# 前端
+cd app && npm install     # 安装依赖
+cd app && npm run dev     # Vite 开发服务器
+cd app && npx tsc --noEmit        # TypeScript 类型检查
+cd app && npx vite build          # 生产构建
+cd app && npm run tauri dev       # Tauri 桌面开发
+cd app && npm run tauri build     # Tauri 构建
 
-# 安装依赖
-cd 任务发布系统 && pip install -r requirements.txt
+# 主后端（端口 8900）
+cd app/backend && RUST_LOG=info cargo run
 
-# StateOS
-cd 任务发布系统/StateOS && python main.py
+# MinerU 代理服务（端口 8899）
+cd app/mineru-service && RUST_LOG=info cargo run
+
+# Agent 独立环境变量配置
+MINERU_API_KEY=xxx MINERU_API_URL=https://mineru.net \
+  cd app/mineru-service && cargo run
 ```
 
-## 子项目：Tauri app
+## 数据库
 
-`app/` 目前是 Tauri v2 + React 脚手架，只有一个 greet 示例。
+- SQLite 文件：`app/backend/data/learning_tools.db`（可通过 `DB_PATH` 环境变量指定）
+- 12 张核心表：tasks, tags, task_tags, daily_user_state, gacha_records, task_rejection_log, task_completion_feedback, user_schedule, daily_schedules, activities, settings, knowledge_points
+- 笔记目录：`app/backend/data/notes/`（可通过 `NOTES_DIR` 环境变量指定）
 
-```bash
-cd app
-npm install
-npm run tauri dev    # 开发模式
-npm run tauri build  # 构建
-```
+## 文档
 
-## 子项目：笔记处理系统
-
-独立 Python 脚本集合，用于处理 Markdown 笔记文件的维基链接转换、知识点分析、链接清理等。每个脚本独立运行，无统一入口。
-
-```bash
-python 笔记处理系统/工具/check_links_v2.py
-python 笔记处理系统/工具/convert_to_wikilinks.py
-...
-```
-
-## 关键设计约束
-
-- 数据库迁移使用 `_meta` 表版本号管理，迁移前自动备份
-- Task 字段通过 `ALTER TABLE` + try-except 渐进式添加（`_add_legacy_columns()`）
-- 周期任务通过 `repeat_type` 字段控制，每日重置 `draw_count_today`
-- AI 工作流：UI 导出 JSON → 粘贴给 AI → AI 输出文件放入 `ai_imports/` → 重启自动导入
+- `docs/api-documentation.md` — 完整的 REST API 规范（43+ 端点）
+- `docs/backend-research.md` — Python 旧版分析 + 实施建议

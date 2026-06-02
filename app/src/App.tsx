@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import gsap from 'gsap';
 import { Sparkles, ListTodo, Trash2, CalendarDays, BookOpen, Settings } from 'lucide-react';
 import { StoreProvider, useStore } from './lib/store';
+import UserGuide, { hasSeenGuide } from './components/UserGuide';
 import GachaPage from './pages/GachaPage';
 import TasksPage from './pages/TasksPage';
 import DiscardPage from './pages/DiscardPage';
@@ -22,8 +23,23 @@ const NAV_ITEMS = [
 
 function AppShell() {
   const [expanded, setExpanded] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const { data } = useStore();
   const navRef = useRef<HTMLDivElement>(null);
+
+  // 首次启动自动显示操作指引
+  useEffect(() => {
+    if (!hasSeenGuide()) {
+      setShowGuide(true);
+    }
+  }, []);
+
+  // 监听来自设置的打开指引事件
+  useEffect(() => {
+    const handler = () => setShowGuide(true);
+    window.addEventListener('open-user-guide', handler);
+    return () => window.removeEventListener('open-user-guide', handler);
+  }, []);
 
   // 应用保存的主题
   useEffect(() => {
@@ -83,7 +99,7 @@ function AppShell() {
     };
   }, []);
 
-  return (
+  return (<>
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       {/* Sidebar */}
       <motion.nav
@@ -275,6 +291,8 @@ function AppShell() {
         </AnimatePresence>
       </main>
     </div>
+      <UserGuide open={showGuide} onClose={() => setShowGuide(false)} />
+    </>
   );
 }
 

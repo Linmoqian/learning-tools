@@ -366,22 +366,40 @@ export default function SettingsPage() {
             justifyContent: 'space-between',
           }}
         >
-          <button
-            onClick={handleReset}
-            style={{
-              padding: '8px 18px',
-              borderRadius: 8,
-              border: '1px solid rgba(255,255,255,0.12)',
-              background: 'none',
-              color: '#a8a0b8',
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-              transition: 'all 0.15s ease',
-            }}
-          >
-            恢复默认
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={handleReset}
+              style={{
+                padding: '8px 18px',
+                borderRadius: 8,
+                border: '1px solid rgba(255,255,255,0.12)',
+                background: 'none',
+                color: '#a8a0b8',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              恢复默认
+            </button>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('open-user-guide'))}
+              style={{
+                padding: '8px 18px',
+                borderRadius: 8,
+                border: '1px solid rgba(240,192,64,0.25)',
+                background: 'rgba(240,192,64,0.06)',
+                color: '#f0c040',
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              📖 操作指引
+            </button>
+          </div>
 
           <motion.button
             whileHover={{ scale: 1.03 }}

@@ -1,0 +1,698 @@
+{
+  "action": "batch_tasks",
+  "tasks": [
+    {
+      "name": "背诵100个四级单词",
+      "estimated_time": 30,
+      "repeat_type": "daily",
+      "tags": ["CET-4", "单词"]
+    },
+    {
+      "name": "复习笔记「CET4-写作-保底原则与核心策略」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "写作"]
+    },
+    {
+      "name": "复习笔记「CET4-写作-议论文框架」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "写作"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「CET4-写作-三大论证方式」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "写作"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「CET4-写作-句子扩写与句型改写」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "写作"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「CET4-写作-书信与应用文」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "写作"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「CET4-写作-书信作文模板与写法」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "写作"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "写一篇四级作文（议论文或书信交替）",
+      "estimated_time": 30,
+      "repeat_type": "weekly",
+      "tags": ["CET-4", "写作"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「CET4-听力-长对话题型解题方法」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "听力"]
+    },
+    {
+      "name": "复习笔记「CET4-听力-长对话信号词体系与真题技巧」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "听力"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「CET4-听力-新闻与篇章解题策略」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "听力"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做第一套四级真题听力部分",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["CET-4", "听力", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「CET4-听力-长对话信号词体系与真题技巧」}"]
+    },
+    {
+      "name": "做第二套四级真题听力部分",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["CET-4", "听力", "真题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做第三套四级真题听力部分",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["CET-4", "听力", "真题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做第四套四级真题听力部分",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["CET-4", "听力", "真题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「CET4-阅读-三步定位法与题型分类」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "阅读"]
+    },
+    {
+      "name": "复习笔记「CET4-阅读-题型分类与主旨题解法」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "阅读"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「CET4-阅读-仔细阅读总览与答题策略」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "阅读"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「CET4-阅读-仔细阅读泛读与主旨定位」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "阅读"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「CET4-阅读-选词填空题解题策略」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "阅读"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「CET4-阅读-长篇阅读解题方法」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "阅读"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做第一套四级真题阅读部分",
+      "estimated_time": 40,
+      "repeat_type": "single",
+      "tags": ["CET-4", "阅读", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「CET4-阅读-仔细阅读总览与答题策略」}"]
+    },
+    {
+      "name": "做第二套四级真题阅读部分",
+      "estimated_time": 40,
+      "repeat_type": "single",
+      "tags": ["CET-4", "阅读", "真题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做第三套四级真题阅读部分",
+      "estimated_time": 40,
+      "repeat_type": "single",
+      "tags": ["CET-4", "阅读", "真题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做第四套四级真题阅读部分",
+      "estimated_time": 40,
+      "repeat_type": "single",
+      "tags": ["CET-4", "阅读", "真题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「CET4-语法-非谓语动词与被动语态」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["CET-4", "语法"]
+    },
+    {
+      "name": "做第一套四级真题翻译部分",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["CET-4", "翻译", "真题"]
+    },
+    {
+      "name": "做第二套四级真题翻译部分",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["CET-4", "翻译", "真题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做第三套四级真题翻译部分",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["CET-4", "翻译", "真题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做第四套四级真题翻译部分",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["CET-4", "翻译", "真题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做第一套四级真题全卷（限时）",
+      "estimated_time": 120,
+      "repeat_type": "single",
+      "tags": ["CET-4", "模考"],
+      "prerequisite_ids": ["${task_name:做第一套四级真题听力部分}", "${task_name:做第一套四级真题阅读部分}", "${task_name:做第一套四级真题翻译部分}"]
+    },
+    {
+      "name": "做第二套四级真题全卷（限时）",
+      "estimated_time": 120,
+      "repeat_type": "single",
+      "tags": ["CET-4", "模考"],
+      "prerequisite_ids": ["${task_name:做第二套四级真题听力部分}", "${task_name:做第二套四级真题阅读部分}", "${task_name:做第二套四级真题翻译部分}"]
+    },
+    {
+      "name": "做第三套四级真题全卷（限时）",
+      "estimated_time": 120,
+      "repeat_type": "single",
+      "tags": ["CET-4", "模考"],
+      "prerequisite_ids": ["${task_name:做第三套四级真题听力部分}", "${task_name:做第三套四级真题阅读部分}", "${task_name:做第三套四级真题翻译部分}"]
+    },
+    {
+      "name": "做第四套四级真题全卷（限时）",
+      "estimated_time": 120,
+      "repeat_type": "single",
+      "tags": ["CET-4", "模考"],
+      "prerequisite_ids": ["${task_name:做第四套四级真题听力部分}", "${task_name:做第四套四级真题阅读部分}", "${task_name:做第四套四级真题翻译部分}"]
+    },
+    {
+      "name": "复习笔记「01_半导体基础与PN结」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第1单元"]
+    },
+    {
+      "name": "复习笔记「02_二极管特性与等效模型」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第1单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「03_半导体三极管原理」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第2单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「04_直流电路分析基础」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第2单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「05_交流电路分析基础」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第2单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「06_三极管放大电路_静态分析」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第3单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做静态工作点 I_BQ、I_CQ、V_CEQ 计算题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第3单元", "计算"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「07_三极管放大电路_动态分析」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第3单元"],
+      "prerequisite_ids": ["${task_name:复习笔记「06_三极管放大电路_静态分析」}"]
+    },
+    {
+      "name": "复习笔记「08_布尔代数与逻辑门电路」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第4单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「09_逻辑函数化简_公式法与卡诺图」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第4单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做卡诺图化简必考题（4变量，圈1原则）",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第4单元", "计算"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「10_组合逻辑电路分析与设计」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第4单元"],
+      "prerequisite_ids": ["${task_name:复习笔记「09_逻辑函数化简_公式法与卡诺图」}"]
+    },
+    {
+      "name": "做组合逻辑电路分析题（电路→表达式→真值表→功能）",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第4单元", "计算"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做组合逻辑电路设计题（功能→真值表→表达式→电路图）",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第4单元", "计算"],
+      "prerequisite_ids": ["${task_name:复习笔记「10_组合逻辑电路分析与设计」}"]
+    },
+    {
+      "name": "复习笔记「11_编码器与集成电路实现」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第4单元"],
+      "prerequisite_ids": ["${task_name:复习笔记「10_组合逻辑电路分析与设计」}"]
+    },
+    {
+      "name": "复习笔记「12_数字信号与编码技术」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["电子技术", "第4单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「01_计算机系统概述与硬件组成」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第1-4单元"]
+    },
+    {
+      "name": "复习笔记「02_程序设计语言发展简史」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第1-4单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「03_计算机层次结构与指令集」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第1-4单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「04_计算机硬件组成与总线」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第1-4单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "背诵冯诺依曼主要思想",
+      "estimated_time": 15,
+      "repeat_type": "single",
+      "tags": ["计算机", "第1-4单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「05_数据表示与编码概述」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第5-9单元"],
+      "prerequisite_ids": ["${task_name:复习笔记「04_计算机硬件组成与总线」}"]
+    },
+    {
+      "name": "复习笔记「06_数值数据的编码_原码反码补码」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第5-9单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做补码求真值计算题",
+      "estimated_time": 20,
+      "repeat_type": "single",
+      "tags": ["计算机", "第5-9单元", "计算"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「07_非数值数据与字符编码」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第5-9单元"],
+      "prerequisite_ids": ["${task_name:复习笔记「05_数据表示与编码概述」}"]
+    },
+    {
+      "name": "复习笔记「08_数据存储与单位」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第5-9单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「09_数据运算与位操作」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第5-9单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习IEEE754单精度浮点数转换规则",
+      "estimated_time": 20,
+      "repeat_type": "single",
+      "tags": ["计算机", "第5-9单元"]
+    },
+    {
+      "name": "做IEEE754双向转换计算题（十进制↔IEEE754）",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第5-9单元", "计算"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「10_指令格式与数据传送」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第10-12单元"],
+      "prerequisite_ids": ["${task_name:复习笔记「09_数据运算与位操作」}"]
+    },
+    {
+      "name": "复习寻址方式与MOV/LEA指令",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第10-12单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做寻址与指令执行结果分析题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第10-12单元", "计算"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习加法器分析流程",
+      "estimated_time": 20,
+      "repeat_type": "single",
+      "tags": ["计算机", "第10-12单元"]
+    },
+    {
+      "name": "做加法器分析题（换数据考查）",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第10-12单元", "计算"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「11_程序的编译链接与符号解析」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第10-12单元"],
+      "prerequisite_ids": ["${task_name:复习笔记「10_指令格式与数据传送」}"]
+    },
+    {
+      "name": "背诵源程序到可执行文件的转换步骤（预处理→编译→汇编→链接）",
+      "estimated_time": 15,
+      "repeat_type": "single",
+      "tags": ["计算机", "第10-12单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「12_指令执行过程详解」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["计算机", "第10-12单元"],
+      "prerequisite_ids": ["${task_name:复习笔记「11_程序的编译链接与符号解析」}"]
+    },
+    {
+      "name": "背诵机器指令完整执行过程（6步）",
+      "estimated_time": 15,
+      "repeat_type": "single",
+      "tags": ["计算机", "第10-12单元"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「13_行列式的性质与计算」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第1章"]
+    },
+    {
+      "name": "做课后习题第1章",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第1章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「07_行列式展开与逆矩阵」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第1章"],
+      "prerequisite_ids": ["${task_name:复习笔记「13_行列式的性质与计算」}"]
+    },
+    {
+      "name": "做课后习题行列式展开与逆矩阵",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第1章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「11_矩阵秩的定义与计算」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第2章"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做课后习题矩阵秩的计算",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第2章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「10_初等变换与标准型」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第2章"],
+      "prerequisite_ids": ["${task_name:复习笔记「11_矩阵秩的定义与计算」}"]
+    },
+    {
+      "name": "做课后习题初等变换",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第2章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「05_向量运算与内积」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第3章"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做课后习题向量运算",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第3章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「01_线性相关与无关判定」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第3章"],
+      "prerequisite_ids": ["${task_name:复习笔记「05_向量运算与内积」}"]
+    },
+    {
+      "name": "做课后习题线性相关/无关判定",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第3章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「04_向量组的秩与极大无关组」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第3章"],
+      "prerequisite_ids": ["${task_name:复习笔记「01_线性相关与无关判定」}"]
+    },
+    {
+      "name": "做课后习题向量组秩与极大无关组",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第3章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「02_线性空间与基底维数」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第3章"],
+      "prerequisite_ids": ["${task_name:复习笔记「04_向量组的秩与极大无关组」}"]
+    },
+    {
+      "name": "做课后习题线性空间与基底",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第3章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「03_基与维数习题讲解」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第3章"],
+      "prerequisite_ids": ["${task_name:复习笔记「02_线性空间与基底维数」}"]
+    },
+    {
+      "name": "复习笔记「08_特征值与特征向量基础」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第4章"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做课后习题特征值与特征向量",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第4章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「09_特征值性质与判定」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第4章"],
+      "prerequisite_ids": ["${task_name:复习笔记「08_特征值与特征向量基础」}"]
+    },
+    {
+      "name": "做课后习题特征值性质",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第4章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「12_相似矩阵与对角化」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第4章"],
+      "prerequisite_ids": ["${task_name:复习笔记「09_特征值性质与判定」}"]
+    },
+    {
+      "name": "做课后习题相似对角化",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第4章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「06_矩阵相似与二次型」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["线性代数", "第4章"],
+      "prerequisite_ids": ["${task_name:复习笔记「12_相似矩阵与对角化」}"]
+    },
+    {
+      "name": "做线性代数综合复习题",
+      "estimated_time": 60,
+      "repeat_type": "single",
+      "tags": ["线性代数", "综合"],
+      "prerequisite_ids": ["${task_name:做课后习题第1章}", "${task_name:做课后习题行列式展开与逆矩阵}", "${task_name:做课后习题矩阵秩的计算}", "${task_name:做课后习题初等变换}", "${task_name:做课后习题向量运算}", "${task_name:做课后习题线性相关/无关判定}", "${task_name:做课后习题向量组秩与极大无关组}", "${task_name:做课后习题线性空间与基底}", "${task_name:做课后习题特征值与特征向量}", "${task_name:做课后习题特征值性质}", "${task_name:做课后习题相似对角化}"]
+    },
+    {
+      "name": "做一篇英语Ⅱ听力对话",
+      "estimated_time": 20,
+      "repeat_type": "daily",
+      "tags": ["大学英语Ⅱ", "听力"]
+    },
+    {
+      "name": "做一篇英语Ⅱ阅读理解",
+      "estimated_time": 25,
+      "repeat_type": "daily",
+      "tags": ["大学英语Ⅱ", "阅读"]
+    },
+    {
+      "name": "背英语Ⅱ翻译常用句型",
+      "estimated_time": 15,
+      "repeat_type": "daily",
+      "tags": ["大学英语Ⅱ", "翻译"]
+    },
+    {
+      "name": "写一篇英语Ⅱ应用文或议论文",
+      "estimated_time": 30,
+      "repeat_type": "weekly",
+      "tags": ["大学英语Ⅱ", "写作"]
+    }
+  ],
+  "explanation": "已创建101个期末复习任务，涵盖5个科目：\n\n**英语四级（CET-4）| 6月13日考试（34个任务）：**\n- 单词：背诵100个四级单词（每日重复）\n- 写作模块：7个笔记 + 写作文（每周4次重复）\n- 听力模块：3个笔记 + 4套真题听力\n- 阅读模块：6个笔记 + 4套真题阅读\n- 语法模块：1个笔记\n- 翻译模块：4套真题翻译\n- 完整模拟：4套真题全卷（限时）\n\n**电子技术 | 6月18日考试（16个任务）：**\n- 第1单元：半导体基础、二极管特性\n- 第2单元：三极管原理、直流/交流电路\n- 第3单元：静态分析、动态分析\n- 第4单元：布尔代数、卡诺图、组合逻辑、编码器、数字信号\n\n**计算机 | 6月25日考试（22个任务）：**\n- 第1-4单元：系统概述、程序语言、层次结构、硬件组成\n- 第5-9单元：数据表示、数值编码、非数值编码、数据存储、IEEE754\n- 第10-12单元：指令格式、寻址方式、加法器、编译链接、指令执行\n\n**线性代数 | 6月29日考试（25个任务）：**\n- 第1章：行列式性质与计算\n- 第2章：矩阵秩、初等变换\n- 第3章：向量运算、线性相关、向量组秩、线性空间\n- 第4章：特征值、相似对角化、二次型\n- 综合复习题\n\n**大学英语Ⅱ | 6月30日考试（4个任务）：**\n- 听力对话（每日重复）\n- 阅读理解（每日重复）\n- 翻译句型（每日重复）\n- 写作文（每周2次重复）\n\n**重复类型说明：**\n- daily：每日重复（单词背诵、英语Ⅱ听力/阅读/翻译）\n- weekly：每周重复（四级作文每周4次，英语Ⅱ作文每周2次）\n- single：单次任务（所有复习和真题练习）"
+}

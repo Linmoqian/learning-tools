@@ -1,0 +1,879 @@
+{
+  "action": "batch_tasks",
+  "tasks": [
+    {
+      "name": "复习笔记「07-01 多元函数的概念与极限」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "笔记"]
+    },
+    {
+      "name": "做习题册7.1节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中7.1节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「07-01 多元函数的概念与极限」}"]
+    },
+    {
+      "name": "复习笔记「07-02 偏导数与全微分」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「07-01 多元函数的概念与极限」}"]
+    },
+    {
+      "name": "做习题册7.2节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中7.2节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「07-02 偏导数与全微分」}"]
+    },
+    {
+      "name": "复习笔记「07-03 多元复合函数求导法则」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「07-02 偏导数与全微分」}"]
+    },
+    {
+      "name": "做习题册7.3节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中7.3节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「07-03 多元复合函数求导法则」}"]
+    },
+    {
+      "name": "复习笔记「07-04 隐函数求导」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「07-03 多元复合函数求导法则」}"]
+    },
+    {
+      "name": "做习题册7.4节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中7.4节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「07-04 隐函数求导」}"]
+    },
+    {
+      "name": "复习笔记「07-05 隐函数组求导」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「07-04 隐函数求导」}"]
+    },
+    {
+      "name": "做习题册7.5节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中7.5节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「07-05 隐函数组求导」}"]
+    },
+    {
+      "name": "复习笔记「07-06 多元函数的极值与条件极值」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「07-05 隐函数组求导」}"]
+    },
+    {
+      "name": "做习题册7.6节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中7.6节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「07-06 多元函数的极值与条件极值」}"]
+    },
+    {
+      "name": "做第七章总习题",
+      "estimated_time": 60,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第7章", "综合"],
+      "prerequisite_ids": ["${task_name:做习题册7.1节对应题}", "${task_name:做真题中7.1节同类题}", "${task_name:做习题册7.2节对应题}", "${task_name:做真题中7.2节同类题}", "${task_name:做习题册7.3节对应题}", "${task_name:做真题中7.3节同类题}", "${task_name:做习题册7.4节对应题}", "${task_name:做真题中7.4节同类题}", "${task_name:做习题册7.5节对应题}", "${task_name:做真题中7.5节同类题}", "${task_name:做习题册7.6节对应题}", "${task_name:做真题中7.6节同类题}"]
+    },
+    {
+      "name": "复习笔记「08-01 二重积分的概念与性质」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第8章", "笔记"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做习题册8.1节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第8章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中8.1节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第8章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「08-01 二重积分的概念与性质」}"]
+    },
+    {
+      "name": "复习笔记「08-02 二重积分的计算方法」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第8章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「08-01 二重积分的概念与性质」}"]
+    },
+    {
+      "name": "做习题册8.2节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第8章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中8.2节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第8章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「08-02 二重积分的计算方法」}"]
+    },
+    {
+      "name": "做第八章总习题",
+      "estimated_time": 60,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第8章", "综合"],
+      "prerequisite_ids": ["${task_name:做习题册8.1节对应题}", "${task_name:做真题中8.1节同类题}", "${task_name:做习题册8.2节对应题}", "${task_name:做真题中8.2节同类题}"]
+    },
+    {
+      "name": "复习笔记「09-01 对弧长的曲线积分」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第9章", "笔记"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做习题册9.1节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第9章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中9.1节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第9章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「09-01 对弧长的曲线积分」}"]
+    },
+    {
+      "name": "复习笔记「09-02 格林公式及其应用」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第9章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「09-01 对弧长的曲线积分」}"]
+    },
+    {
+      "name": "做习题册9.2节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第9章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中9.2节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第9章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「09-02 格林公式及其应用」}"]
+    },
+    {
+      "name": "做第九章总习题",
+      "estimated_time": 60,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第9章", "综合"],
+      "prerequisite_ids": ["${task_name:做习题册9.1节对应题}", "${task_name:做真题中9.1节同类题}", "${task_name:做习题册9.2节对应题}", "${task_name:做真题中9.2节同类题}"]
+    },
+    {
+      "name": "复习笔记「10-01 常数项级数的概念与性质」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "笔记"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做习题册10.1节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中10.1节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「10-01 常数项级数的概念与性质」}"]
+    },
+    {
+      "name": "复习笔记「10-02 正项级数的判别法」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「10-01 常数项级数的概念与性质」}"]
+    },
+    {
+      "name": "做习题册10.2节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中10.2节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「10-02 正项级数的判别法」}"]
+    },
+    {
+      "name": "复习笔记「10-03 幂级数的收敛半径与收敛域」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「10-02 正项级数的判别法」}"]
+    },
+    {
+      "name": "做习题册10.3节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中10.3节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「10-03 幂级数的收敛半径与收敛域」}"]
+    },
+    {
+      "name": "复习笔记「10-04 幂级数的和函数」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「10-03 幂级数的收敛半径与收敛域」}"]
+    },
+    {
+      "name": "做习题册10.4节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中10.4节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「10-04 幂级数的和函数」}"]
+    },
+    {
+      "name": "复习笔记「10-05 泰勒级数与函数展开」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「10-04 幂级数的和函数」}"]
+    },
+    {
+      "name": "做习题册10.5节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中10.5节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「10-05 泰勒级数与函数展开」}"]
+    },
+    {
+      "name": "复习笔记「10-06 函数展开成幂级数的方法」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「10-05 泰勒级数与函数展开」}"]
+    },
+    {
+      "name": "做习题册10.6节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中10.6节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「10-06 函数展开成幂级数的方法」}"]
+    },
+    {
+      "name": "做第十章总习题",
+      "estimated_time": 60,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第10章", "综合"],
+      "prerequisite_ids": ["${task_name:做习题册10.1节对应题}", "${task_name:做真题中10.1节同类题}", "${task_name:做习题册10.2节对应题}", "${task_name:做真题中10.2节同类题}", "${task_name:做习题册10.3节对应题}", "${task_name:做真题中10.3节同类题}", "${task_name:做习题册10.4节对应题}", "${task_name:做真题中10.4节同类题}", "${task_name:做习题册10.5节对应题}", "${task_name:做真题中10.5节同类题}", "${task_name:做习题册10.6节对应题}", "${task_name:做真题中10.6节同类题}"]
+    },
+    {
+      "name": "复习笔记「11-01 微分方程的概念与分类」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "笔记"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做习题册11.1节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中11.1节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「11-01 微分方程的概念与分类」}"]
+    },
+    {
+      "name": "复习笔记「11-02 一阶微分方程——变量分离与齐次方程」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「11-01 微分方程的概念与分类」}"]
+    },
+    {
+      "name": "做习题册11.2节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中11.2节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「11-02 一阶微分方程——变量分离与齐次方程」}"]
+    },
+    {
+      "name": "复习笔记「11-03 一阶线性微分方程与常数变易法」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「11-02 一阶微分方程——变量分离与齐次方程」}"]
+    },
+    {
+      "name": "做习题册11.3节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中11.3节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「11-03 一阶线性微分方程与常数变易法」}"]
+    },
+    {
+      "name": "复习笔记「11-04 全微分方程判定与求解」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「11-03 一阶线性微分方程与常数变易法」}"]
+    },
+    {
+      "name": "做习题册11.4节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中11.4节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「11-04 全微分方程判定与求解」}"]
+    },
+    {
+      "name": "复习笔记「11-05 二阶微分方程降阶法」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「11-04 全微分方程判定与求解」}"]
+    },
+    {
+      "name": "做习题册11.5节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中11.5节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「11-05 二阶微分方程降阶法」}"]
+    },
+    {
+      "name": "复习笔记「11-06 常系数微分方程解法」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「11-05 二阶微分方程降阶法」}"]
+    },
+    {
+      "name": "做习题册11.6节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中11.6节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「11-06 常系数微分方程解法」}"]
+    },
+    {
+      "name": "复习笔记「11-07 高阶线性微分方程解的结构」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「11-06 常系数微分方程解法」}"]
+    },
+    {
+      "name": "做习题册11.7节对应题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做真题中11.7节同类题",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "真题"],
+      "prerequisite_ids": ["${task_name:复习笔记「11-07 高阶线性微分方程解的结构」}"]
+    },
+    {
+      "name": "做第十一章总习题",
+      "estimated_time": 60,
+      "repeat_type": "single",
+      "tags": ["高等数学", "第11章", "综合"],
+      "prerequisite_ids": ["${task_name:做习题册11.1节对应题}", "${task_name:做真题中11.1节同类题}", "${task_name:做习题册11.2节对应题}", "${task_name:做真题中11.2节同类题}", "${task_name:做习题册11.3节对应题}", "${task_name:做真题中11.3节同类题}", "${task_name:做习题册11.4节对应题}", "${task_name:做真题中11.4节同类题}", "${task_name:做习题册11.5节对应题}", "${task_name:做真题中11.5节同类题}", "${task_name:做习题册11.6节对应题}", "${task_name:做真题中11.6节同类题}", "${task_name:做习题册11.7节对应题}", "${task_name:做真题中11.7节同类题}"]
+    },
+    {
+      "name": "做2023年高数真题全卷（限时）",
+      "estimated_time": 120,
+      "repeat_type": "single",
+      "tags": ["高等数学", "模考"],
+      "prerequisite_ids": ["${task_name:做第七章总习题}", "${task_name:做第八章总习题}", "${task_name:做第九章总习题}", "${task_name:做第十章总习题}", "${task_name:做第十一章总习题}"]
+    },
+    {
+      "name": "做2024年高数真题全卷",
+      "estimated_time": 120,
+      "repeat_type": "single",
+      "tags": ["高等数学", "模考"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做2025年高数真题全卷",
+      "estimated_time": 120,
+      "repeat_type": "single",
+      "tags": ["高等数学", "模考"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "整理高数错题并重做",
+      "estimated_time": 60,
+      "repeat_type": "single",
+      "tags": ["高等数学", "错题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「01静电场与电场强度」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第1单元", "笔记"]
+    },
+    {
+      "name": "做课后习题静电场部分",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第1单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「02质点运动学两类问题与例题」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第1单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「01静电场与电场强度」}"]
+    },
+    {
+      "name": "做课后习题质点运动学",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第1单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「03电通量与高斯定理」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第1单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「02质点运动学两类问题与例题」}"]
+    },
+    {
+      "name": "做课后习题电通量与高斯定理",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第1单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「03自然坐标系与加速度分解」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第1单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「03电通量与高斯定理」}"]
+    },
+    {
+      "name": "做课后习题自然坐标系与加速度",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第1单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「04圆周运动的角量与线量」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第1单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「03自然坐标系与加速度分解」}"]
+    },
+    {
+      "name": "做课后习题圆周运动",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第1单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「05动力学解题思路与受力分析」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第2单元", "笔记"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做课后习题动力学分析",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第2单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「06动量定理与解题步骤」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第2单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「05动力学解题思路与受力分析」}"]
+    },
+    {
+      "name": "做课后习题动量定理",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第2单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「07刚体模型与定轴转动运动学」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第3单元", "笔记"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做课后习题刚体运动学",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第3单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「08刚体定轴转动定律与转动惯量」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第3单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「07刚体模型与定轴转动运动学」}"]
+    },
+    {
+      "name": "做课后习题转动定律与转动惯量",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第3单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「09角动量定理与守恒定律」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第3单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「08刚体定轴转动定律与转动惯量」}"]
+    },
+    {
+      "name": "做课后习题角动量定理与守恒",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第3单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「10三大守恒律复习与简谐振动入门」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第3单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「09角动量定理与守恒定律」}"]
+    },
+    {
+      "name": "做课后习题三大守恒律",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第3单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「11旋转矢量法与简谐振动描述」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第3单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「10三大守恒律复习与简谐振动入门」}"]
+    },
+    {
+      "name": "做课后习题简谐振动",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第3单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「12机械波与波函数概述」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第4单元", "笔记"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做课后习题机械波基础",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第4单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「13波动方程与相位分析」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第4单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「12机械波与波函数概述」}"]
+    },
+    {
+      "name": "做课后习题波动方程与相位",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第4单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「14气体动理论基础」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第5单元", "笔记"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做课后习题气体动理论",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第5单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「15分子自由度与速率分布」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第5单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「14气体动理论基础」}"]
+    },
+    {
+      "name": "做课后习题自由度与速率分布",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第5单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「16热力学第一定律与四大过程」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第5单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「15分子自由度与速率分布」}"]
+    },
+    {
+      "name": "做课后习题热力学第一定律",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第5单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「17热力学循环与效率计算」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第5单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「16热力学第一定律与四大过程」}"]
+    },
+    {
+      "name": "做课后习题热力学循环与效率",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第5单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「18光的干涉原理与两类装置」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第6单元", "笔记"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "做课后习题光的干涉",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第6单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「19_半波损失的原理与判断」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第6单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「18光的干涉原理与两类装置」}"]
+    },
+    {
+      "name": "做课后习题半波损失判断",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第6单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「20惠更斯-菲涅耳原理与衍射分类」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第6单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「19_半波损失的原理与判断」}"]
+    },
+    {
+      "name": "做课后习题衍射原理",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第6单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "复习笔记「21圆孔衍射与光学仪器分辨本领」",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第6单元", "笔记"],
+      "prerequisite_ids": ["${task_name:复习笔记「20惠更斯-菲涅耳原理与衍射分类」}"]
+    },
+    {
+      "name": "做课后习题圆孔衍射与分辨本领",
+      "estimated_time": 25,
+      "repeat_type": "single",
+      "tags": ["大学物理", "第6单元", "习题"],
+      "prerequisite_ids": ["${prev_task_id}"]
+    },
+    {
+      "name": "重做波动光学作业原题（杨氏双缝、单缝衍射）",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["大学物理", "作业原题"],
+      "prerequisite_ids": ["${task_name:做课后习题光的干涉}", "${task_name:做课后习题衍射原理}"]
+    },
+    {
+      "name": "重做刚体力学作业原题",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["大学物理", "作业原题"],
+      "prerequisite_ids": ["${task_name:复习笔记「08刚体定轴转动定律与转动惯量」}", "${task_name:做课后习题转动定律与转动惯量}"]
+    },
+    {
+      "name": "重做热力学作业原题",
+      "estimated_time": 30,
+      "repeat_type": "single",
+      "tags": ["大学物理", "作业原题"],
+      "prerequisite_ids": ["${task_name:做课后习题热力学第一定律}", "${task_name:做课后习题热力学循环与效率}"]
+    }
+  ],
+  "explanation": "已创建123个高等数学和大学物理复习任务：\n\n**高等数学 | 7月8日考试（78个任务）：**\n- 第7章 多元函数微分学（19个任务）：概念与极限→偏导数→复合函数求导→隐函数求导→隐函数组→极值与条件极值\n- 第8章 重积分（7个任务）：二重积分概念→计算方法\n- 第9章 曲线积分（7个任务）：对弧长的曲线积分→格林公式\n- 第10章 无穷级数（19个任务）：常数项级数→正项级数判别→幂级数收敛域→和函数→泰勒级数→函数展开\n- 第11章 微分方程（21个任务）：概念与分类→变量分离→线性方程→全微分方程→降阶法→常系数方程→高阶线性\n- 真题模拟（4个任务）：2023-2025真题全卷 + 错题整理\n\n**大学物理 | 7月9日考试（45个任务）：**\n- 第1单元 静电场与质点运动学（10个任务）：静电场→质点运动→高斯定理→自然坐标系→圆周运动\n- 第2单元 动力学与动量（4个任务）：动力学分析→动量定理\n- 第3单元 刚体与振动（10个任务）：刚体运动学→转动定律→角动量→守恒律→简谐振动\n- 第4单元 波动（4个任务）：机械波→波动方程\n- 第5单元 热力学（8个任务）：气体动理论→自由度→热力学第一定律→循环效率\n- 第6单元 光学（8个任务）：光的干涉→半波损失→衍射原理→圆孔衍射\n- 作业原题专项（3个任务）：波动光学→刚体力学→热力学"
+}

@@ -80,7 +80,7 @@ pub async fn call_claude(
     let response = client
         .post("https://api.anthropic.com/v1/messages")
         .header("x-api-key", api_key)
-        .header("anthropic-version", "2023-06-01")
+        .header("anthropic-version", "2024-10-01")
         .header("content-type", "application/json")
         .json(&request)
         .send()
@@ -99,7 +99,8 @@ pub async fn call_claude(
     let body = response.text().await.map_err(|e| format!("读取响应失败: {}", e))?;
 
     if !status.is_success() {
-        return Err(format!("Claude API 返回错误 ({}): {}", status.as_u16(), body));
+        let truncated = if body.len() > 200 { format!("{}...（共{}字符）", &body[..200], body.len()) } else { body.clone() };
+        return Err(format!("Claude API 返回错误 ({}): {}", status.as_u16(), truncated));
     }
 
     let claude_resp: ClaudeResponse = serde_json::from_str(&body)
@@ -164,7 +165,8 @@ pub async fn call_openai(
     let body = response.text().await.map_err(|e| format!("读取响应失败: {}", e))?;
 
     if !status.is_success() {
-        return Err(format!("OpenAI API 返回错误 ({}): {}", status.as_u16(), body));
+        let truncated = if body.len() > 200 { format!("{}...（共{}字符）", &body[..200], body.len()) } else { body.clone() };
+        return Err(format!("OpenAI API 返回错误 ({}): {}", status.as_u16(), truncated));
     }
 
     let openai_resp: OpenAIResponse = serde_json::from_str(&body)

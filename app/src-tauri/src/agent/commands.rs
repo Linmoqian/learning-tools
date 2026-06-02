@@ -4,6 +4,7 @@ use super::prompts;
 use tauri::Manager;
 
 #[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RunAgentRequest {
     pub agent_type: String,
     pub note_content: String,
@@ -81,11 +82,4 @@ pub async fn save_api_key(
     let app_data_dir = app.path().app_data_dir()
         .map_err(|e| format!("获取应用数据目录失败: {}", e))?;
     key_manager::save_key(&app_data_dir, &provider, &key)
-}
-
-#[tauri::command]
-pub async fn get_prompt_content(agent_type: String) -> Result<String, String> {
-    prompts::get_prompt(&agent_type)
-        .map(|s| s.to_string())
-        .ok_or_else(|| format!("未知的 Agent 类型: {}", agent_type))
 }

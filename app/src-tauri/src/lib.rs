@@ -15,7 +15,6 @@ pub fn run() {
             agent::commands::run_agent,
             agent::commands::get_api_key_status,
             agent::commands::save_api_key,
-            agent::commands::get_prompt_content,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

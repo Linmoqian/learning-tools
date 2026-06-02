@@ -33,7 +33,7 @@ export default function AgentPanel({ notes }: { notes: Note[] }) {
   useEffect(() => {
     invoke<ApiKeyStatus>('get_api_key_status')
       .then(setKeyStatus)
-      .catch(() => {});
+      .catch(() => console.error('获取 API Key 状态失败'));
   }, []);
 
   const handleRun = useCallback(async () => {
@@ -64,6 +64,9 @@ export default function AgentPanel({ notes }: { notes: Note[] }) {
     try {
       await invoke('save_api_key', { provider: providerName, key });
       setKeyStatus(prev => ({ ...prev, [providerName]: true }));
+      // Clear input after save
+      if (providerName === 'claude') setClaudeKey('');
+      if (providerName === 'openai') setOpenaiKey('');
     } catch (e) {
       setError(typeof e === 'string' ? e : '保存失败');
     }

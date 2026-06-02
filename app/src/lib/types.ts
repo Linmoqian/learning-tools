@@ -175,6 +175,7 @@ export interface ThemeSettings {
   primaryColor: string;
   primaryColorLight: string;
   primaryColorDark: string;
+  themeMode: 'light' | 'dark';
 }
 
 export interface AppSettings {
@@ -187,9 +188,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
   llm: { apiUrl: '', apiKey: '', modelName: 'gpt-4o' },
   mineru: { apiUrl: '', apiKey: '' },
   theme: {
-    primaryColor: '#f0c040',
-    primaryColorLight: '#fae8a0',
-    primaryColorDark: '#c99f2e',
+    primaryColor: '#f5e6a0',
+    primaryColorLight: '#fdf6d4',
+    primaryColorDark: '#d4c06a',
+    themeMode: 'light',
   },
 };
 

@@ -29,6 +29,9 @@ function AppShell() {
   useEffect(() => {
     const { theme } = data.settings;
     const root = document.documentElement;
+    // 背景模式
+    root.setAttribute('data-theme', theme.themeMode);
+    // 主色变量
     root.style.setProperty('--gold', theme.primaryColor);
     root.style.setProperty('--gold-light', theme.primaryColorLight);
     root.style.setProperty('--gold-dark', theme.primaryColorDark);

@@ -32,6 +32,7 @@ function hexToRgb(hex: string): string {
 /** 应用主题颜色到 CSS 变量 */
 function applyTheme(theme: AppSettings['theme']) {
   const root = document.documentElement;
+  root.setAttribute('data-theme', theme.themeMode);
   root.style.setProperty('--gold', theme.primaryColor);
   root.style.setProperty('--gold-light', theme.primaryColorLight);
   root.style.setProperty('--gold-dark', theme.primaryColorDark);
@@ -149,6 +150,7 @@ export default function SettingsPage() {
 
   const handlePrimaryColorChange = (color: string) => {
     const theme = {
+      ...localSettings.theme,
       primaryColor: color,
       primaryColorLight: lightenHex(color, 0.6),
       primaryColorDark: darkenHex(color, 0.25),
@@ -231,7 +233,7 @@ export default function SettingsPage() {
                 style={{
                   width: 48,
                   height: 48,
-                  border: '2px solid rgba(255,255,255,0.15)',
+                  border: '2px solid rgba(128,128,128,0.25)',
                   borderRadius: 12,
                   cursor: 'pointer',
                   padding: 2,
@@ -240,10 +242,10 @@ export default function SettingsPage() {
               />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <span style={{ fontSize: 14, color: '#f0e8da', fontWeight: 600 }}>
+              <span style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 600 }}>
                 主色
               </span>
-              <span style={{ fontSize: 11, color: '#6b6480', fontFamily: 'monospace' }}>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'monospace' }}>
                 {localSettings.theme.primaryColor}
               </span>
             </div>
@@ -258,15 +260,60 @@ export default function SettingsPage() {
                     height: 24,
                     borderRadius: 6,
                     background: localSettings.theme[key as keyof typeof localSettings.theme],
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(128,128,128,0.15)',
                   }}
                 />
               ))}
             </div>
           </div>
-          <p style={{ fontSize: 11, color: '#6b6480', lineHeight: 1.4 }}>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.4 }}>
             选择主色后实时预览，保存后永久生效。暗色和浅色变体会自动生成。
           </p>
+        </div>
+      ),
+    },
+    {
+      title: '背景模式',
+      desc: '切换深色/浅色背景',
+      fields: (
+        <div style={{ display: 'flex', gap: 8 }}>
+          {[
+            { mode: 'light' as const, label: '☀️ 浅色', desc: '明亮柔和' },
+            { mode: 'dark' as const, label: '🌙 深色', desc: '沉浸专注' },
+          ].map(opt => (
+            <button
+              key={opt.mode}
+              onClick={() => {
+                const theme = { ...localSettings.theme, themeMode: opt.mode };
+                setLocalSettings(prev => ({ ...prev, theme }));
+                applyTheme(theme);
+              }}
+              style={{
+                flex: 1,
+                padding: '14px 16px',
+                borderRadius: 12,
+                border: `2px solid ${localSettings.theme.themeMode === opt.mode ? 'var(--gold)' : 'rgba(128,128,128,0.15)'}`,
+                background: localSettings.theme.themeMode === opt.mode
+                  ? 'rgba(212,168,67,0.1)'
+                  : 'rgba(128,128,128,0.04)',
+                cursor: 'pointer',
+                textAlign: 'center',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <div style={{ fontSize: 24, marginBottom: 4 }}>{opt.label.split(' ')[0]}</div>
+              <div style={{
+                fontSize: 14, fontWeight: 700,
+                color: 'var(--text-primary)',
+                marginBottom: 2,
+              }}>
+                {opt.label.split(' ')[1]}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                {opt.desc}
+              </div>
+            </button>
+          ))}
         </div>
       ),
     },

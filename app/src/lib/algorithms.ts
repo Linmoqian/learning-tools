@@ -182,26 +182,33 @@ export function detectCycle(
 }
 
 // ===== Chain Unlock =====
-export function chainUnlock(tasks: Task[], completedTaskId: number): string[] {
-  const unlocked: string[] = [];
+export function chainUnlock(tasks: Task[], completedTaskId: number): { tasks: Task[]; unlocked: string[] } {
   const taskMap = new Map(tasks.map(t => [t.id, t]));
+  const unlocked: string[] = [];
+  const updatedIds = new Set<number>();
 
   function checkAllPrereqsDone(task: Task): boolean {
     return task.prerequisiteIds.every(pid => taskMap.get(pid)?.completed ?? false);
   }
 
-  function unlock(taskId: number) {
-    const dependents = tasks.filter(t => t.prerequisiteIds.includes(taskId));
-    for (const dep of dependents) {
-      if (!dep.completed && !dep.isUnlocked && checkAllPrereqsDone(dep)) {
-        dep.isUnlocked = true;
+  function markUnlock(taskId: number) {
+    for (const dep of tasks) {
+      if (!dep.prerequisiteIds.includes(taskId)) continue;
+      if (dep.completed || dep.isUnlocked || updatedIds.has(dep.id)) continue;
+      if (checkAllPrereqsDone(dep)) {
+        updatedIds.add(dep.id);
         unlocked.push(dep.name);
-        unlock(dep.id);
+        markUnlock(dep.id);
       }
     }
   }
-  unlock(completedTaskId);
-  return unlocked;
+  markUnlock(completedTaskId);
+
+  if (!updatedIds.size) return { tasks, unlocked };
+  return {
+    tasks: tasks.map(t => updatedIds.has(t.id) ? { ...t, isUnlocked: true } : t),
+    unlocked,
+  };
 }
 
 // ===== New Session Context =====

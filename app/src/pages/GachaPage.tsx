@@ -454,7 +454,6 @@ export default function GachaPage() {
     setMeteorIntensity(prev => Math.min(prev + 0.5, 3));
     setTimeout(() => setMeteorIntensity(1), 4000);
     showToast('✦ 命运之轮转动，任务显现', 'success');
-    dispatch({ type: 'RECORD_DRAW', taskId: choices[0].id });
   };
 
   const handleMultiDraw = () => {
@@ -469,7 +468,6 @@ export default function GachaPage() {
         const choices = getTopWeighted(poolTasks, Math.min(count * 2, 5), 'medium', sessionCtx);
         if (choices.length) {
           results.push({ pool: p, choices, slotIndex: results.length, isUrgent: isDdlUrgent(choices[0]) });
-          dispatch({ type: 'RECORD_DRAW', taskId: choices[0].id });
         }
       }
     }
@@ -487,6 +485,7 @@ export default function GachaPage() {
     setDrawResult(null);
     setMultiResults([]);
     dispatch({ type: 'SET_CURRENT_TASK', id: task.id });
+    dispatch({ type: 'RECORD_DRAW', taskId: task.id });
     dispatch({ type: 'RECORD_GACHA', record: { id: Date.now(), timestamp: new Date().toISOString(), poolName: pool || 'unknown', availableTime: minutes, taskId: task.id, accepted: true } });
     setShowTimer(true);
   };

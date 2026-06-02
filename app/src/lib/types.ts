@@ -159,6 +159,40 @@ export interface GachaSessionContext {
   replacedTaskId: number | null;
 }
 
+// ===== Settings =====
+export interface LLSettings {
+  apiUrl: string;
+  apiKey: string;
+  modelName: string;
+}
+
+export interface MinerU {
+  apiUrl: string;
+  apiKey: string;
+}
+
+export interface ThemeSettings {
+  primaryColor: string;
+  primaryColorLight: string;
+  primaryColorDark: string;
+}
+
+export interface AppSettings {
+  llm: LLSettings;
+  mineru: MinerU;
+  theme: ThemeSettings;
+}
+
+export const DEFAULT_SETTINGS: AppSettings = {
+  llm: { apiUrl: '', apiKey: '', modelName: 'gpt-4o' },
+  mineru: { apiUrl: '', apiKey: '' },
+  theme: {
+    primaryColor: '#f0c040',
+    primaryColorLight: '#fae8a0',
+    primaryColorDark: '#c99f2e',
+  },
+};
+
 // ===== Store Shape =====
 export interface AppData {
   tasks: Task[];
@@ -172,6 +206,7 @@ export interface AppData {
   activityOptions: string[];
   nextTaskId: number;
   currentTaskId: number | null;
+  settings: AppSettings;
 }
 
 // ===== Default Schedule Slots =====

@@ -7,7 +7,9 @@ import {
   ScheduleItem,
   TaskRejectionLog,
   TaskCompletionFeedback,
+  AppSettings,
   DEFAULT_SLOTS,
+  DEFAULT_SETTINGS,
 } from './types';
 
 const STORAGE_KEY = 'learning-tools-data';
@@ -25,6 +27,7 @@ function createInitialData(): AppData {
     activityOptions: ['无安排', '学习', '工作', '阅读', '运动', '休息'],
     nextTaskId: 1,
     currentTaskId: null,
+    settings: DEFAULT_SETTINGS,
   };
 }
 
@@ -66,7 +69,8 @@ type Action =
   | { type: 'DELETE_ACTIVITY'; activity: string }
   | { type: 'SET_SCHEDULE_ITEM'; item: ScheduleItem }
   | { type: 'RECORD_SLEEP'; date: string; bedTime: string; onTime: boolean }
-  | { type: 'RESET_PERIODIC' };
+  | { type: 'RESET_PERIODIC' }
+  | { type: 'UPDATE_SETTINGS'; settings: AppSettings };
 
 function reducer(state: AppData, action: Action): AppData {
   switch (action.type) {
@@ -242,6 +246,9 @@ function reducer(state: AppData, action: Action): AppData {
       };
       return { ...state, dailyUserStates: map };
     }
+
+    case 'UPDATE_SETTINGS':
+      return { ...state, settings: action.settings };
 
     case 'RESET_PERIODIC': {
       const now = new Date().toISOString();

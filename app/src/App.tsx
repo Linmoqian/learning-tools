@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Sparkles, ListTodo, Trash2, CalendarDays } from 'lucide-react';
+import { Sparkles, ListTodo, Trash2, CalendarDays, BookOpen } from 'lucide-react';
 import { StoreProvider } from './lib/store';
 import GachaPage from './pages/GachaPage';
 import TasksPage from './pages/TasksPage';
 import DiscardPage from './pages/DiscardPage';
 import SchedulePage from './pages/SchedulePage';
+import KnowledgePage from './pages/KnowledgePage';
 
 const NAV_ITEMS = [
   { path: '/gacha', label: '抽卡', icon: Sparkles },
   { path: '/tasks', label: '任务', icon: ListTodo },
+  { path: '/knowledge', label: '知识库', icon: BookOpen },
   { path: '/discard', label: '弃牌堆', icon: Trash2 },
   { path: '/schedule', label: '日程', icon: CalendarDays },
 ];
@@ -143,6 +145,20 @@ function AppShell() {
                   style={{ height: '100%' }}
                 >
                   <TasksPage />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/knowledge"
+              element={
+                <motion.div
+                  key="knowledge"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  style={{ height: '100%' }}
+                >
+                  <KnowledgePage />
                 </motion.div>
               }
             />

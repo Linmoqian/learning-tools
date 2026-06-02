@@ -30,3 +30,7 @@ __pycache__/
 
 # Rust build
 mineru-service/target/
+backend/target/
+
+# Runtime data
+backend/data/

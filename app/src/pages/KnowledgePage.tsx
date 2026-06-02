@@ -2,15 +2,16 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Search, Network, BarChart3, ChevronRight,
-  FileText, Layers, AlertTriangle, CheckCircle, List,
+  FileText, Layers, AlertTriangle, CheckCircle, List, Sparkles,
 } from 'lucide-react';
+import AgentPanel from '../components/AgentPanel';
 import KnowledgeGraph from '../components/KnowledgeGraph';
 import {
   useKnowledgeBase, searchItems, SUBJECTS, SUBJECT_COLORS,
 } from '../lib/knowledge';
 import type { Note, KnowledgePoint, SubjectStat } from '../lib/knowledge';
 
-type Tab = 'browse' | 'graph' | 'analysis';
+type Tab = 'browse' | 'graph' | 'analysis' | 'agent';
 
 function StatCard({ label, value, color, icon }: {
   label: string; value: number | string; color: string; icon: React.ReactNode;
@@ -439,6 +440,7 @@ export default function KnowledgePage() {
           { key: 'browse' as Tab, label: '浏览', icon: Search },
           { key: 'graph' as Tab, label: '知识图谱', icon: Network },
           { key: 'analysis' as Tab, label: '链接分析', icon: BarChart3 },
+          { key: 'agent' as Tab, label: 'AI Agent', icon: Sparkles },
         ].map(t => (
           <button
             key={t.key}
@@ -515,6 +517,15 @@ export default function KnowledgePage() {
               style={{ height: '100%', overflow: 'auto' }}
             >
               <AnalysisTab analysis={analysis} />
+            </motion.div>
+          )}
+
+          {tab === 'agent' && (
+            <motion.div
+              key="agent" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ height: '100%', overflow: 'auto' }}
+            >
+              <AgentPanel notes={notes} />
             </motion.div>
           )}
         </AnimatePresence>

@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
-import { Clock, Sparkles, ListOrdered, Timer as TimerIcon } from 'lucide-react';
+import { Sparkles, ListOrdered, Timer as TimerIcon, Star } from 'lucide-react';
 import ChoiceDialog from '../components/ChoiceDialog';
 import ReplaceDialog from '../components/ReplaceDialog';
 import Timer from '../components/Timer';
@@ -16,69 +16,316 @@ import {
   createSessionContext, isDdlUrgent,
 } from '../lib/algorithms';
 
-// ===== 卡池配置 =====
-const POOL_CONFIG: Record<string, { gradient: string; glow: string; icon: string; desc: string }> = {
+// ====================================================================
+// 美学常量
+// ====================================================================
+
+const COSMIC = {
+  void: '#050510',
+  deepNebula: '#0c0824',
+  midNebula: '#1a0a2e',
+  gold: '#d4a843',
+  goldLight: '#f0d878',
+  goldDark: '#a07d2e',
+  purple: '#7c3aed',
+  purpleLight: '#a78bfa',
+  blue: '#0ea5e9',
+  ember: '#f97316',
+  starWhite: '#f0f4ff',
+  textPrimary: '#f0e8da',
+  textSecondary: '#a8a0b8',
+  textMuted: '#6b6480',
+  glassBg: 'rgba(10, 5, 32, 0.6)',
+  glassBorder: 'rgba(212, 168, 67, 0.12)',
+};
+
+const POOL_CONFIG: Record<string, { gradient: string; glow: string; icon: string; desc: string; aura: string }> = {
   [GachaPool.FRAGMENT]: {
     gradient: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-    glow: 'rgba(99, 102, 241, 0.4)',
-    icon: '💎',
-    desc: '短碎片时间',
+    glow: 'rgba(99,102,241,0.5)',
+    icon: '✦',
+    desc: '碎片时隙',
+    aura: 'rgba(99,102,241,0.08)',
   },
   [GachaPool.TOMATO]: {
-    gradient: 'linear-gradient(135deg, #f59e0b, #f97316)',
-    glow: 'rgba(245, 158, 11, 0.4)',
-    icon: '🍅',
-    desc: '专注番茄钟',
+    gradient: 'linear-gradient(135deg, #d4a843, #f97316)',
+    glow: 'rgba(212,168,67,0.5)',
+    icon: '☀',
+    desc: '专注时隙',
+    aura: 'rgba(212,168,67,0.08)',
   },
   [GachaPool.DEEP]: {
     gradient: 'linear-gradient(135deg, #ef4444, #ec4899)',
-    glow: 'rgba(239, 68, 68, 0.4)',
+    glow: 'rgba(239,68,68,0.5)',
     icon: '🔥',
-    desc: '深度工作',
+    desc: '深度时隙',
+    aura: 'rgba(239,68,68,0.08)',
   },
 };
 
-// ===== 稀有度配置 =====
 const RARITY = [
-  { stars: 5, label: '传说', gradient: 'linear-gradient(135deg, #f59e0b, #f97316)', glow: 'rgba(245,158,11,0.3)', bg: 'rgba(245,158,11,0.08)' },
-  { stars: 4, label: '史诗', gradient: 'linear-gradient(135deg, #a855f7, #ec4899)', glow: 'rgba(168,85,247,0.3)', bg: 'rgba(168,85,247,0.08)' },
-  { stars: 3, label: '稀有', gradient: 'linear-gradient(135deg, #3b82f6, #06b6d4)', glow: 'rgba(59,130,246,0.3)', bg: 'rgba(59,130,246,0.08)' },
-  { stars: 2, label: '普通', gradient: 'linear-gradient(135deg, #6b7280, #9ca3af)', glow: 'rgba(107,114,128,0.3)', bg: 'rgba(107,114,128,0.08)' },
+  { stars: 5, label: '传说', gradient: 'linear-gradient(135deg, #d4a843, #f97316)', glow: 'rgba(212,168,67,0.35)', bg: 'rgba(212,168,67,0.08)' },
+  { stars: 4, label: '史诗', gradient: 'linear-gradient(135deg, #7c3aed, #ec4899)', glow: 'rgba(124,58,237,0.35)', bg: 'rgba(124,58,237,0.08)' },
+  { stars: 3, label: '稀有', gradient: 'linear-gradient(135deg, #0ea5e9, #06b6d4)', glow: 'rgba(14,165,233,0.35)', bg: 'rgba(14,165,233,0.08)' },
+  { stars: 2, label: '普通', gradient: 'linear-gradient(135deg, #6b7280, #9ca3af)', glow: 'rgba(107,114,128,0.3)', bg: 'rgba(107,114,128,0.06)' },
 ];
 
-// ===== Toast 组件 =====
-function Toast({ message, type, onDone }: { message: string; type: 'success' | 'error' | 'info'; onDone: () => void }) {
+function getTaskRarity(task: Task) {
+  if (isDdlUrgent(task)) return RARITY[0];
+  if (task.priority >= 4) return RARITY[1];
+  if (task.priority >= 2) return RARITY[2];
+  return RARITY[3];
+}
+
+// ====================================================================
+// 字体加载
+// ====================================================================
+function useFontLoader() {
   useEffect(() => {
-    const t = setTimeout(onDone, 2000);
-    return () => clearTimeout(t);
-  }, [onDone]);
+    if (document.querySelector('[data-cosmic-fonts]')) return;
+    const link = document.createElement('link');
+    link.setAttribute('data-cosmic-fonts', '');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap';
+    document.head.appendChild(link);
+  }, []);
+}
+
+// ====================================================================
+// 流星系统 (GSAP)
+// ====================================================================
+function ShootingStars({ intensity = 1 }: { intensity?: number }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const meteors: gsap.core.Tween[] = [];
+    let interval: number;
+
+    const spawn = () => {
+      const meteor = document.createElement('div');
+      const head = document.createElement('div');
+      const trail = document.createElement('div');
+
+      const length = 100 + Math.random() * 150;
+      const angle = -20 + Math.random() * -25; // -20 ~ -45 degrees
+      const rad = (angle * Math.PI) / 180;
+      const startX = window.innerWidth * 0.3 + Math.random() * window.innerWidth * 0.7;
+      const startY = -40 - Math.random() * 120;
+      const distance = 500 + Math.random() * 500;
+
+      trail.style.cssText = `
+        position: absolute; left: 0; top: 0;
+        width: ${length}px; height: 2px;
+        background: linear-gradient(to left, transparent 0%, rgba(212,168,67,0.6) 40%, rgba(255,240,200,1) 70%, #fff 100%);
+        border-radius: 1px 0 0 1px;
+        filter: blur(0.5px);
+        pointer-events: none;
+      `;
+      head.style.cssText = `
+        position: absolute;
+        right: -3px; top: -2px;
+        width: 5px; height: 5px;
+        background: radial-gradient(circle, #fff 20%, rgba(255,240,200,0.8) 60%, transparent);
+        border-radius: 50%;
+        filter: blur(0.5px);
+        pointer-events: none;
+      `;
+      meteor.appendChild(trail);
+      meteor.appendChild(head);
+      meteor.style.cssText = `
+        position: absolute; left: 0; top: 0;
+        transform: rotate(${angle}deg);
+        transform-origin: right center;
+        pointer-events: none;
+        z-index: 2;
+      `;
+      container.appendChild(meteor);
+
+      const endX = startX + Math.cos(rad) * distance;
+      const endY = startY + Math.sin(rad) * distance;
+      const duration = 0.6 + Math.random() * 0.5;
+
+      const tween = gsap.fromTo(meteor,
+        { x: startX, y: startY, opacity: 1 },
+        {
+          x: endX, y: endY, opacity: 0,
+          duration,
+          ease: 'power2.out',
+          onComplete: () => { meteor.remove(); },
+        },
+      );
+      meteors.push(tween);
+
+      // Glow trail 残留
+      const glow = document.createElement('div');
+      glow.style.cssText = `
+        position: absolute; left: ${startX + length}px; top: ${startY}px;
+        width: 3px; height: 3px;
+        background: rgba(212,168,67,0.4);
+        border-radius: 50%;
+        filter: blur(3px);
+        pointer-events: none; z-index: 1;
+      `;
+      container.appendChild(glow);
+      gsap.to(glow, { opacity: 0, scale: 0, duration: 2, delay: 0.1, onComplete: () => glow.remove() });
+    };
+
+    const baseInterval = Math.max(800, 3000 / intensity);
+    const initialBatch = Math.min(3, Math.round(2 * intensity));
+    for (let i = 0; i < initialBatch; i++) {
+      setTimeout(spawn, i * (300 + Math.random() * 400));
+    }
+    interval = window.setInterval(() => {
+      if (document.hidden) return;
+      spawn();
+      if (Math.random() > 0.55) setTimeout(spawn, 150 + Math.random() * 200);
+    }, baseInterval + Math.random() * 1500);
+
+    return () => {
+      clearInterval(interval);
+      meteors.forEach(t => t.kill());
+      container.innerHTML = '';
+    };
+  }, [intensity]);
+
+  return <div ref={containerRef} style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 2, pointerEvents: 'none' }} />;
+}
+
+// ====================================================================
+// 星座星图 (SVG)
+// ====================================================================
+function ConstellationField() {
+  const stars = useMemo(() => {
+    const pts = Array.from({ length: 50 }, (_, i) => ({
+      id: i, x: Math.random() * 100, y: Math.random() * 100,
+      size: 0.5 + Math.random() * 2.5, bright: Math.random(),
+      delay: Math.random() * 5, pulse: 2 + Math.random() * 4,
+    }));
+
+    const lines: Array<[number, number]> = [];
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        const dx = pts[i].x - pts[j].x;
+        const dy = pts[i].y - pts[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 15 && Math.random() > 0.7) {
+          lines.push([i, j]);
+        }
+      }
+    }
+    return { points: pts, lines };
+  }, []);
+
+  return (
+    <svg style={{ position: 'fixed', inset: 0, width: '100%', height: '100%', zIndex: 1, pointerEvents: 'none' }}>
+      {/* Constellation lines */}
+      {stars.lines.map(([a, b], i) => {
+        const p1 = stars.points[a];
+        const p2 = stars.points[b];
+        return (
+          <line
+            key={`l-${i}`}
+            x1={`${p1.x}%`} y1={`${p1.y}%`}
+            x2={`${p2.x}%`} y2={`${p2.y}%`}
+            stroke="rgba(212,168,67,0.08)"
+            strokeWidth="0.5"
+            strokeDasharray="4 3"
+            style={{ animation: `constellation-draw 3s ${Math.random() * 5}s ease-out` }}
+          />
+        );
+      })}
+      {/* Stars */}
+      {stars.points.map(s => (
+        <g key={s.id}>
+          <circle
+            cx={`${s.x}%`} cy={`${s.y}%`} r={s.size * 0.6}
+            fill={s.bright > 0.7 ? COSMIC.goldLight : '#64748b'}
+            opacity={0.15 + s.size * 0.12}
+            style={{ animation: s.bright > 0.7 ? `pulse-star ${s.pulse}s ${s.delay}s ease-in-out infinite` : 'none' }}
+          />
+          {s.size > 1.5 && (
+            <circle
+              cx={`${s.x}%`} cy={`${s.y}%`} r={s.size * 0.15}
+              fill="#fff" opacity={0.3}
+              style={{ animation: `pulse-star ${s.pulse * 0.7}s ${s.delay}s ease-in-out infinite` }}
+            />
+          )}
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+// ====================================================================
+// 星云背景
+// ====================================================================
+function NebulaBackground() {
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+      {/* Base */}
+      <div style={{ position: 'absolute', inset: 0, background: COSMIC.void }} />
+      {/* Nebula 1 — 蓝紫 */}
+      <div style={{
+        position: 'absolute', width: '80%', height: '70%',
+        top: '-10%', right: '-20%',
+        background: 'radial-gradient(ellipse at 60% 40%, rgba(124,58,237,0.12) 0%, rgba(14,165,233,0.06) 30%, transparent 60%)',
+        filter: 'blur(60px)',
+        animation: 'nebula-drift 20s ease-in-out infinite',
+      }} />
+      {/* Nebula 2 — 金 */}
+      <div style={{
+        position: 'absolute', width: '60%', height: '60%',
+        bottom: '-10%', left: '-10%',
+        background: 'radial-gradient(ellipse at 40% 60%, rgba(212,168,67,0.08) 0%, rgba(124,58,237,0.04) 30%, transparent 55%)',
+        filter: 'blur(50px)',
+        animation: 'nebula-drift 25s ease-in-out infinite reverse',
+      }} />
+      {/* Star dust layer — 微噪点 */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        opacity: 0.3,
+        backgroundImage: 'radial-gradient(1px 1px at 20% 30%, #fff, transparent), radial-gradient(1px 1px at 40% 70%, #fff, transparent), radial-gradient(1.5px 1.5px at 60% 20%, #fff, transparent), radial-gradient(1px 1px at 80% 50%, #fff, transparent)',
+        backgroundSize: '200px 200px',
+      }} />
+    </div>
+  );
+}
+
+// ====================================================================
+// 宇宙风格 Toast
+// ====================================================================
+function AstralToast({ message, type, onDone }: { message: string; type: 'success' | 'error' | 'info'; onDone: () => void }) {
+  useEffect(() => { const t = setTimeout(onDone, 2200); return () => clearTimeout(t); }, [onDone]);
 
   const colors = {
-    success: { bg: 'rgba(34,197,94,0.15)', border: 'rgba(34,197,94,0.3)', text: '#22c55e' },
-    error: { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.3)', text: '#ef4444' },
-    info: { bg: 'rgba(59,130,246,0.15)', border: 'rgba(59,130,246,0.3)', text: '#3b82f6' },
+    success: { border: 'rgba(212,168,67,0.4)', text: COSMIC.goldLight, shadow: 'rgba(212,168,67,0.2)' },
+    error: { border: 'rgba(239,68,68,0.4)', text: '#ef4444', shadow: 'rgba(239,68,68,0.2)' },
+    info: { border: 'rgba(14,165,233,0.4)', text: '#0ea5e9', shadow: 'rgba(14,165,233,0.2)' },
   };
   const c = colors[type];
 
   return (
     <motion.div
-      initial={{ y: -40, opacity: 0, scale: 0.9 }}
+      initial={{ y: -50, opacity: 0, scale: 0.85 }}
       animate={{ y: 0, opacity: 1, scale: 1 }}
-      exit={{ y: -40, opacity: 0, scale: 0.9 }}
+      exit={{ y: -50, opacity: 0, scale: 0.85 }}
       style={{
-        position: 'fixed',
-        top: 24,
-        left: '50%',
-        transform: 'translateX(-50%)',
+        position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
         zIndex: 999,
-        padding: '12px 28px',
-        borderRadius: 14,
-        background: c.bg,
+        padding: '14px 32px',
+        borderRadius: 16,
+        background: 'rgba(10,5,32,0.85)',
         border: `1px solid ${c.border}`,
-        backdropFilter: 'blur(12px)',
+        backdropFilter: 'blur(20px)',
+        boxShadow: `0 8px 32px ${c.shadow}, inset 0 1px 0 rgba(255,255,255,0.05)`,
         color: c.text,
         fontSize: 14,
         fontWeight: 600,
+        fontFamily: 'var(--font-body), serif',
+        letterSpacing: '0.5px',
         whiteSpace: 'nowrap',
       }}
     >
@@ -87,78 +334,68 @@ function Toast({ message, type, onDone }: { message: string; type: 'success' | '
   );
 }
 
-// ===== 浮动星星粒子 =====
-function StarParticles() {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const stars: HTMLDivElement[] = [];
-
-    for (let i = 0; i < 40; i++) {
-      const star = document.createElement('div');
-      const size = 1 + Math.random() * 2;
-      star.style.cssText = `
-        position: absolute;
-        width: ${size}px;
-        height: ${size}px;
-        background: ${i % 5 === 0 ? '#f0c040' : '#64748b'};
-        border-radius: 50%;
-        left: ${Math.random() * 100}%;
-        top: ${Math.random() * 100}%;
-        opacity: ${0.2 + Math.random() * 0.5};
-        pointer-events: none;
-      `;
-      container.appendChild(star);
-      stars.push(star);
-
-      gsap.to(star, {
-        y: -(20 + Math.random() * 40),
-        opacity: 0,
-        duration: 3 + Math.random() * 4,
-        repeat: -1,
-        delay: Math.random() * 4,
-        ease: 'none',
-      });
-    }
-
-    return () => stars.forEach(s => s.remove());
-  }, []);
-
-  return <div ref={containerRef} style={{ position: 'fixed', inset: 0, overflow: 'hidden', zIndex: 0, pointerEvents: 'none' }} />;
+// ====================================================================
+// 星轨按钮装饰 (纯 CSS)
+// ====================================================================
+function OrbitRing({ size = 100 }: { size?: number }) {
+  return (
+    <div style={{
+      position: 'absolute', width: size, height: size,
+      borderRadius: '50%',
+      border: '1px solid rgba(212,168,67,0.12)',
+      top: '50%', left: '50%',
+      transform: 'translate(-50%, -50%)',
+      animation: 'spin-slow 12s linear infinite',
+      pointerEvents: 'none',
+    }}>
+      <div style={{
+        position: 'absolute', top: -3, left: '50%', marginLeft: -2,
+        width: 5, height: 5, borderRadius: '50%',
+        background: COSMIC.gold,
+        boxShadow: `0 0 8px ${COSMIC.gold}`,
+      }} />
+    </div>
+  );
 }
 
-// ===== 获取任务稀有度 =====
-function getTaskRarity(task: Task) {
-  // 紧急/DDL 任务 → 5星
-  if (isDdlUrgent(task)) return RARITY[0];
-  // 高优先级 → 4星
-  if (task.priority >= 4) return RARITY[1];
-  // 中等优先级 → 3星
-  if (task.priority >= 2) return RARITY[2];
-  // 低优先级 → 2星
-  return RARITY[3];
+function OrbitRingReverse({ size = 130 }: { size?: number }) {
+  return (
+    <div style={{
+      position: 'absolute', width: size, height: size,
+      borderRadius: '50%',
+      border: '1px dashed rgba(212,168,67,0.07)',
+      top: '50%', left: '50%',
+      transform: 'translate(-50%, -50%)',
+      animation: 'spin-slow-reverse 18s linear infinite',
+      pointerEvents: 'none',
+    }}>
+      <div style={{
+        position: 'absolute', bottom: -3, left: '50%', marginLeft: -2,
+        width: 4, height: 4, borderRadius: '50%',
+        background: COSMIC.purpleLight,
+        boxShadow: `0 0 6px ${COSMIC.purpleLight}`,
+      }} />
+    </div>
+  );
 }
 
+// ====================================================================
+// 快速时间按钮
+// ====================================================================
+const QUICK_TIMES = [
+  { val: 10, icon: '⚡', label: '碎片' },
+  { val: 25, icon: '☀', label: '专注' },
+  { val: 45, icon: '🌊', label: '深度' },
+  { val: 90, icon: '🔥', label: '马拉松' },
+];
+
+// ====================================================================
+// 主组件
+// ====================================================================
 export default function GachaPage() {
   const { dispatch, getAvailableTasks } = useStore();
-  const pageRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const poolsRef = useRef<HTMLDivElement>(null);
 
-  // Toast state
-  const [toasts, setToasts] = useState<Array<{ id: number; message: string; type: 'success' | 'error' | 'info' }>>([]);
-  const toastId = useRef(0);
-
-  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {
-    const id = toastId.current++;
-    setToasts(prev => [...prev, { id, message, type }]);
-  }, []);
-
-  const removeToast = useCallback((id: number) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  }, []);
+  useFontLoader();
 
   const [minutes, setMinutes] = useState(25);
   const [sessionCtx] = useState<GachaSessionContext>(createSessionContext());
@@ -169,27 +406,35 @@ export default function GachaPage() {
   const [replaceTaskId, setReplaceTaskId] = useState<number>(0);
   const [showTimer, setShowTimer] = useState(false);
   const [poolName, setPoolName] = useState('');
+  const [meteorIntensity, setMeteorIntensity] = useState(1);
+
+  const [toasts, setToasts] = useState<Array<{ id: number; message: string; type: 'success' | 'error' | 'info' }>>([]);
+  const toastId = useRef(0);
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info') => {
+    const id = toastId.current++;
+    setToasts(prev => [...prev, { id, message, type }]);
+  }, []);
+  const removeToast = useCallback((id: number) => setToasts(prev => prev.filter(t => t.id !== id)), []);
+
+  const headerRef = useRef<HTMLDivElement>(null);
+  const poolsRef = useRef<HTMLDivElement>(null);
+  const controlRef = useRef<HTMLDivElement>(null);
 
   const pool = getPoolForTime(minutes);
-
   const updatePoolHint = (m: number) => {
     const p = getPoolForTime(m);
     setPoolName(p ? GACHA_POOL_NAMES[p] || '' : '时间不足');
   };
 
-  // GSAP 入场
+  // GSAP 隆重入场
   useEffect(() => {
-    const tl = gsap.timeline();
-    if (headerRef.current) {
-      tl.fromTo(headerRef.current, { y: -20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.7)' });
-    }
+    const tl = gsap.timeline({ defaults: { ease: 'back.out(1.7)' } });
+    if (headerRef.current) tl.fromTo(headerRef.current, { y: -30, opacity: 0, scale: 0.95 }, { y: 0, opacity: 1, scale: 1, duration: 0.5 }, 0.1);
     if (poolsRef.current) {
-      const cards = poolsRef.current.children;
-      if (cards.length) {
-        tl.fromTo(cards, { y: 30, opacity: 0, scale: 0.9 }, {
-          y: 0, opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.7)', stagger: 0.08,
-        }, '-=0.1');
-      }
+      tl.fromTo(poolsRef.current.children, { y: 30, opacity: 0, scale: 0.85 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, stagger: 0.1 }, '-=0.2');
+    }
+    if (controlRef.current) {
+      tl.fromTo(controlRef.current, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4 }, '-=0.15');
     }
     return () => { tl.kill(); };
   }, []);
@@ -199,15 +444,15 @@ export default function GachaPage() {
     const available = getAvailableTasks();
     const poolTasks = filterByPool(available, pool);
     if (!poolTasks.length) return;
-
     const choices = getTopWeighted(poolTasks, 3, 'medium', sessionCtx);
     if (!choices.length) return;
-
     setDrawResult({ pool, choices, slotIndex: 0, isUrgent: isDdlUrgent(choices[0]) });
     setMultiResults([]);
     setSelectedTask(null);
     setShowTimer(false);
-    showToast(`抽出了 ${choices.length} 个候选任务`, 'success');
+    setMeteorIntensity(prev => Math.min(prev + 0.5, 3));
+    setTimeout(() => setMeteorIntensity(1), 4000);
+    showToast('✦ 命运之轮转动，任务显现', 'success');
     dispatch({ type: 'RECORD_DRAW', taskId: choices[0].id });
   };
 
@@ -215,10 +460,8 @@ export default function GachaPage() {
     if (!pool) return;
     const plans = planMultiDraw(minutes);
     if (!plans.length) return;
-
     const available = getAvailableTasks();
     const results: DrawChoiceResult[] = [];
-
     for (const { pool: p, count } of plans) {
       const poolTasks = filterByPool(available, p);
       if (poolTasks.length) {
@@ -229,12 +472,13 @@ export default function GachaPage() {
         }
       }
     }
-
     setMultiResults(results);
     setDrawResult(null);
     setSelectedTask(null);
     setShowTimer(false);
-    showToast(`连抽方案已生成，共 ${results.length} 组`, 'success');
+    setMeteorIntensity(3);
+    setTimeout(() => setMeteorIntensity(1), 5000);
+    showToast(`✦ 群星连缀 · ${results.length} 组命运已交织`, 'success');
   };
 
   const handleSelectTask = (task: Task) => {
@@ -242,38 +486,22 @@ export default function GachaPage() {
     setDrawResult(null);
     setMultiResults([]);
     dispatch({ type: 'SET_CURRENT_TASK', id: task.id });
-    dispatch({
-      type: 'RECORD_GACHA',
-      record: {
-        id: Date.now(),
-        timestamp: new Date().toISOString(),
-        poolName: pool || 'unknown',
-        availableTime: minutes,
-        taskId: task.id,
-        accepted: true,
-      },
-    });
+    dispatch({ type: 'RECORD_GACHA', record: { id: Date.now(), timestamp: new Date().toISOString(), poolName: pool || 'unknown', availableTime: minutes, taskId: task.id, accepted: true } });
     setShowTimer(true);
   };
 
-  const handleSkip = (originalTask: Task) => {
-    setReplaceTaskId(originalTask.id);
-    setShowReplace(true);
-    setDrawResult(null);
-  };
-
+  const handleSkip = (originalTask: Task) => { setReplaceTaskId(originalTask.id); setShowReplace(true); setDrawResult(null); };
   const handleReplace = (reason: string) => {
     dispatch({ type: 'RECORD_REJECTION', entry: { id: Date.now(), taskId: replaceTaskId, reason, timestamp: new Date().toISOString() } });
     setShowReplace(false);
     handleSingleDraw();
   };
-
   const handleTimerComplete = () => {
     if (selectedTask) {
       dispatch({ type: 'COMPLETE_TASK', id: selectedTask.id });
       setSelectedTask(null);
       setShowTimer(false);
-      showToast('🎉 任务完成！', 'success');
+      showToast('✦ 天命已成 · 任务圆满完成', 'success');
     }
   };
 
@@ -282,68 +510,99 @@ export default function GachaPage() {
   const planSummary = plans.map(p => `${p.count}×${GACHA_POOL_NAMES[p.pool]}`).join(' + ');
 
   return (
-    <div ref={pageRef} style={{ padding: '24px 32px', height: '100%', display: 'flex', flexDirection: 'column', gap: 20, overflow: 'auto', position: 'relative' }}>
-      <StarParticles />
+    <div style={{ padding: '24px 32px', height: '100%', display: 'flex', flexDirection: 'column', gap: 18, overflow: 'auto', position: 'relative' }}>
+      {/* 背景层 */}
+      <NebulaBackground />
+      <ConstellationField />
+      <ShootingStars intensity={meteorIntensity} />
 
       {/* Toast */}
       <AnimatePresence>
-        {toasts.map(t => (
-          <Toast key={t.id} message={t.message} type={t.type} onDone={() => removeToast(t.id)} />
-        ))}
+        {toasts.map(t => <AstralToast key={t.id} message={t.message} type={t.type} onDone={() => removeToast(t.id)} />)}
       </AnimatePresence>
 
-      {/* Header */}
-      <div ref={headerRef} style={{ position: 'relative', zIndex: 1 }}>
-        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: 'linear-gradient(135deg, #f0c040, #f97316)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 18,
+      {/* ===== 顶栏 ===== */}
+      <div ref={headerRef} style={{ position: 'relative', zIndex: 5 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16, marginBottom: 8 }}>
+          <h1 style={{
+            fontFamily: 'var(--font-display), serif',
+            fontSize: 30, fontWeight: 700, lineHeight: 1.2,
+            background: 'linear-gradient(135deg, #f0d878 0%, #d4a843 40%, #a07d2e 100%)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            letterSpacing: '4px',
           }}>
-            ✦
+            星穹之愿
+          </h1>
+          <div style={{
+            fontFamily: 'var(--font-body), serif', fontSize: 13,
+            color: COSMIC.textMuted, fontStyle: 'italic',
+            paddingBottom: '4px',
+          }}>
+            — 天命择时，群星引路
           </div>
-          <span className="gradient-text" style={{ fontSize: 28 }}>星穹之愿</span>
-        </h1>
+        </div>
         <StatusBar />
       </div>
 
-      {/* Pool Cards */}
-      <div ref={poolsRef} style={{ position: 'relative', zIndex: 1, display: 'flex', gap: 12 }}>
+      {/* ===== 星门卡池 ===== */}
+      <div ref={poolsRef} style={{ position: 'relative', zIndex: 5, display: 'flex', gap: 10 }}>
         {Object.entries(POOL_CONFIG).map(([key, cfg]) => {
-          const [min, max] = GACHA_POOL_RANGES[key] || [0, 0];
-          const count = pool === key ? availableTasks.length : 0;
           const isActive = pool === key;
+          const poolCount = isActive ? availableTasks.length : 0;
+          const pMin = GACHA_POOL_RANGES[key]?.[0] || 0;
+          const pMax = GACHA_POOL_RANGES[key]?.[1] || 0;
           return (
             <motion.div
               key={key}
-              whileHover={isActive ? { y: -2 } : { y: -1, opacity: 0.7 }}
+              whileHover={{ y: -3, scale: 1.01 }}
               style={{
-                flex: 1,
-                padding: '14px 16px',
-                borderRadius: 16,
-                background: isActive ? cfg.gradient : 'rgba(255,255,255,0.04)',
-                border: isActive ? 'none' : '1px solid rgba(255,255,255,0.08)',
-                cursor: 'pointer',
-                opacity: isActive ? 1 : 0.45,
-                transition: 'all 0.3s ease',
-                boxShadow: isActive ? `0 8px 32px ${cfg.glow}` : 'none',
+                flex: 1, padding: '16px 18px',
+                borderRadius: 18,
+                background: isActive ? cfg.gradient : 'rgba(255,255,255,0.02)',
+                border: isActive ? 'none' : '1px solid rgba(255,255,255,0.06)',
+                cursor: 'default',
+                opacity: isActive ? 1 : 0.35,
+                transition: 'opacity 0.3s ease',
+                position: 'relative',
+                overflow: 'hidden',
               }}
             >
-              <div style={{ fontSize: 20, marginBottom: 4 }}>{cfg.icon}</div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: isActive ? '#fff' : '#a8a0b8' }}>
+              {/* 星芒背景 */}
+              {isActive && (
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: `radial-gradient(ellipse at 50% 0%, ${cfg.glow.replace('0.5', '0.2')} 0%, transparent 60%)`,
+                  pointerEvents: 'none',
+                }} />
+              )}
+              <div style={{ fontSize: 22, marginBottom: 4, position: 'relative' }}>{cfg.icon}</div>
+              <div style={{
+                fontSize: 14, fontWeight: 700,
+                color: isActive ? '#fff' : COSMIC.textSecondary,
+                fontFamily: 'var(--font-heading), serif',
+                letterSpacing: '1px',
+                position: 'relative',
+              }}>
                 {GACHA_POOL_NAMES[key as GachaPool]}
               </div>
-              <div style={{ fontSize: 11, color: isActive ? 'rgba(255,255,255,0.7)' : '#6b6480', marginTop: 2 }}>
-                {min}-{max === 999 ? '∞' : max} 分钟 · {cfg.desc}
+              <div style={{
+                fontSize: 11,
+                color: isActive ? 'rgba(255,255,255,0.6)' : COSMIC.textMuted,
+                fontFamily: 'var(--font-body), serif',
+                marginTop: 2, position: 'relative',
+              }}>
+                {pMin}–{pMax === 999 ? '∞' : pMax} 分钟 · {cfg.desc}
               </div>
-              {isActive && count > 0 && (
+              {isActive && poolCount > 0 && (
                 <div style={{
-                  marginTop: 6, fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.8)',
+                  marginTop: 6, fontSize: 11, fontWeight: 600,
+                  color: 'rgba(255,255,255,0.8)',
+                  fontFamily: 'var(--font-body), serif',
                   display: 'flex', alignItems: 'center', gap: 4,
+                  position: 'relative',
                 }}>
-                  <Sparkles size={10} />
-                  可抽取 {count} 个任务
+                  <Star size={10} fill="currentColor" />
+                  可召唤·{poolCount} 个天命
                 </div>
               )}
             </motion.div>
@@ -351,258 +610,238 @@ export default function GachaPage() {
         })}
       </div>
 
-      {/* Main control area */}
-      <div data-gacha-content style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
-        {/* Time + Draw buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="glass"
-          style={{
-            padding: '20px 32px',
-            borderRadius: 20,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 20,
-            width: '100%',
-            maxWidth: 640,
-            justifyContent: 'center',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Time input */}
+      {/* ===== 控制台 ===== */}
+      <div ref={controlRef} style={{ position: 'relative', zIndex: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, flex: 1 }}>
+        {/* 时间区 */}
+        <div style={{
+          background: COSMIC.glassBg,
+          border: `1px solid ${COSMIC.glassBorder}`,
+          borderRadius: 20,
+          padding: '18px 28px',
+          display: 'flex', alignItems: 'center', gap: 16,
+          width: '100%', maxWidth: 680, justifyContent: 'center',
+          backdropFilter: 'blur(20px)',
+          position: 'relative',
+        }}>
+          {/* 时间 + 卡池指示 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Clock size={18} color="#a8a0b8" />
-            <span style={{ color: '#a8a0b8', fontSize: 13 }}>我有</span>
-            <div style={{ position: 'relative' }}>
-              <input
-                type="number"
-                value={minutes}
-                onChange={e => {
-                  const m = Math.max(1, Math.min(480, parseInt(e.target.value) || 1));
-                  setMinutes(m);
-                  updatePoolHint(m);
-                }}
-                style={{
-                  width: 64,
-                  padding: '6px 8px',
-                  borderRadius: 10,
-                  border: '2px solid rgba(240,192,64,0.3)',
-                  background: 'rgba(240,192,64,0.06)',
-                  color: '#f0c040',
-                  fontSize: 22,
-                  fontWeight: 800,
-                  textAlign: 'center',
-                  outline: 'none',
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              />
-            </div>
-            <span style={{ color: '#a8a0b8', fontSize: 13 }}>分钟</span>
+            <span style={{ color: COSMIC.textSecondary, fontSize: 13, fontFamily: 'var(--font-body), serif' }}>择时</span>
+            <input
+              type="number"
+              value={minutes}
+              onChange={e => { const m = Math.max(1, Math.min(480, parseInt(e.target.value) || 1)); setMinutes(m); updatePoolHint(m); }}
+              style={{
+                width: 60, padding: '4px 6px', borderRadius: 10,
+                border: '2px solid rgba(212,168,67,0.3)',
+                background: 'rgba(212,168,67,0.06)',
+                color: COSMIC.gold, fontSize: 22, fontWeight: 700,
+                textAlign: 'center', outline: 'none',
+                fontFamily: 'var(--font-heading), serif',
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            />
+            <span style={{ color: COSMIC.textSecondary, fontSize: 13, fontFamily: 'var(--font-body), serif' }}>分钟</span>
           </div>
 
-          {/* Pool indicator */}
-          <motion.div
-            key={pool || 'none'}
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            style={{
-              padding: '4px 14px',
-              borderRadius: 20,
-              background: pool ? `${POOL_CONFIG[pool]?.gradient || '#6366f1'}` : 'rgba(239,68,68,0.2)',
-              fontSize: 12,
-              fontWeight: 700,
-              color: '#fff',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {poolName || '⛔ 时间不足'}
-          </motion.div>
+          <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.06)' }} />
 
-          {/* Quick time buttons */}
+          {/* 快速时间 */}
           <div style={{ display: 'flex', gap: 4 }}>
-            {[10, 25, 45, 90].map(t => (
+            {QUICK_TIMES.map(q => (
               <motion.button
-                key={t}
-                whileHover={{ scale: 1.08 }}
-                whileTap={{ scale: 0.92 }}
-                onClick={() => { setMinutes(t); updatePoolHint(t); }}
+                key={q.val}
+                whileHover={{ scale: 1.1, y: -1 }}
+                whileTap={{ scale: 0.93 }}
+                onClick={() => { setMinutes(q.val); updatePoolHint(q.val); }}
                 style={{
-                  padding: '4px 10px',
-                  borderRadius: 8,
-                  border: `1px solid ${minutes === t ? 'rgba(240,192,64,0.5)' : 'rgba(255,255,255,0.08)'}`,
-                  background: minutes === t ? 'rgba(240,192,64,0.12)' : 'rgba(255,255,255,0.03)',
-                  color: minutes === t ? '#f0c040' : '#6b6480',
-                  fontSize: 11,
-                  fontWeight: 600,
-                  cursor: 'pointer',
+                  padding: '6px 12px', borderRadius: 10,
+                  border: `1px solid ${minutes === q.val ? 'rgba(212,168,67,0.4)' : 'rgba(255,255,255,0.06)'}`,
+                  background: minutes === q.val ? 'rgba(212,168,67,0.12)' : 'rgba(255,255,255,0.02)',
+                  color: minutes === q.val ? COSMIC.gold : COSMIC.textMuted,
+                  fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                  fontFamily: 'var(--font-heading), serif',
+                  display: 'flex', alignItems: 'center', gap: 4,
                 }}
               >
-                {t}分
+                <span>{q.icon}</span>
+                <span>{q.val}</span>
               </motion.button>
             ))}
           </div>
 
-          {/* Draw buttons */}
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.06)' }} />
+
+          {/* 卡池标签 */}
+          <motion.div
+            key={pool || 'none'}
+            initial={{ scale: 0.8 }} animate={{ scale: 1 }}
+            style={{
+              padding: '5px 16px', borderRadius: 20,
+              background: pool ? POOL_CONFIG[pool]?.gradient : 'rgba(239,68,68,0.15)',
+              fontSize: 12, fontWeight: 700, color: '#fff',
+              fontFamily: 'var(--font-heading), serif', letterSpacing: '1px',
+            }}
+          >
+            {poolName || '时隙未定'}
+          </motion.div>
+        </div>
+
+        {/* ===== 天命罗盘（抽卡按钮） ===== */}
+        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.4, type: 'spring', stiffness: 120, damping: 14 }}
+            style={{ position: 'relative', width: 180, height: 180 }}
+          >
+            {/* 星轨 */}
+            <OrbitRingReverse size={150} />
+            <OrbitRing size={120} />
+            <OrbitRingReverse size={90} />
+
+            {/* 主按钮 */}
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.93 }}
               onClick={handleSingleDraw}
               disabled={!pool || !availableTasks.length}
+              whileTap={{ scale: 0.92 }}
               style={{
-                padding: '10px 22px',
-                borderRadius: 12,
-                border: 'none',
-                background: !pool || !availableTasks.length
-                  ? 'rgba(255,255,255,0.05)'
-                  : 'linear-gradient(135deg, #f0c040, #f97316)',
-                color: !pool || !availableTasks.length ? '#6b6480' : '#0a0e1a',
-                fontSize: 14,
-                fontWeight: 700,
+                position: 'absolute', top: '50%', left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: 80, height: 80, borderRadius: '50%',
+                border: '2px solid rgba(212,168,67,0.4)',
+                background: 'radial-gradient(circle at 40% 35%, rgba(212,168,67,0.2) 0%, rgba(10,5,32,0.9) 70%)',
                 cursor: !pool || !availableTasks.length ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                boxShadow: pool && availableTasks.length ? '0 4px 20px rgba(240,192,64,0.3)' : 'none',
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+                gap: 2,
+                opacity: !pool || !availableTasks.length ? 0.35 : 1,
+                color: COSMIC.gold,
+                animation: !pool || !availableTasks.length ? 'none' : 'draw-pulse 3s ease-in-out infinite',
+                zIndex: 2,
               }}
             >
-              <Sparkles size={16} />
-              单抽
+              <div style={{
+                position: 'absolute', inset: -8, borderRadius: '50%',
+                background: 'conic-gradient(from 0deg, transparent, rgba(212,168,67,0.1), transparent, rgba(212,168,67,0.05), transparent)',
+                animation: 'spin-slow 6s linear infinite',
+                pointerEvents: 'none',
+              }} />
+              <Sparkles size={22} />
+              <span style={{
+                fontSize: 13, fontWeight: 700,
+                fontFamily: 'var(--font-heading), serif',
+                letterSpacing: '2px',
+              }}>
+                祈愿
+              </span>
             </motion.button>
 
+            {/* 连抽按钮 — 罗盘外缘 */}
             {pool && minutes >= 15 && (
               <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.93 }}
+                transition={{ delay: 0.6, type: 'spring' }}
                 onClick={handleMultiDraw}
                 disabled={!availableTasks.length}
                 style={{
-                  padding: '10px 18px',
-                  borderRadius: 12,
-                  border: '2px solid rgba(240,192,64,0.3)',
-                  background: 'rgba(240,192,64,0.06)',
-                  color: availableTasks.length ? '#f0c040' : '#6b6480',
-                  fontSize: 13,
-                  fontWeight: 700,
+                  position: 'absolute',
+                  top: -8, right: -8,
+                  width: 52, height: 52,
+                  borderRadius: '50%',
+                  border: '2px solid rgba(212,168,67,0.25)',
+                  background: 'radial-gradient(circle at 40% 35%, rgba(212,168,67,0.12), rgba(10,5,32,0.8))',
                   cursor: availableTasks.length ? 'pointer' : 'not-allowed',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center',
                   gap: 0,
-                  opacity: availableTasks.length ? 1 : 0.4,
+                  opacity: availableTasks.length ? 1 : 0.35,
+                  color: COSMIC.gold,
+                  zIndex: 3,
+                  padding: 0,
                 }}
               >
-                <ListOrdered size={16} />
-                <span>连抽</span>
-                {planSummary && (
-                  <span style={{ fontSize: 8, fontWeight: 500, opacity: 0.7 }}>{planSummary}</span>
-                )}
+                <ListOrdered size={14} />
+                <span style={{ fontSize: 8, fontWeight: 700, fontFamily: 'var(--font-heading), serif', letterSpacing: '1px' }}>
+                  连星
+                </span>
               </motion.button>
             )}
-          </div>
-        </motion.div>
+          </motion.div>
 
-        {/* Available count */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.35 }}
-          style={{
-            padding: '8px 20px',
-            borderRadius: 20,
-            background: 'rgba(240,192,64,0.08)',
-            border: '1px solid rgba(240,192,64,0.15)',
-            fontSize: 13,
-            color: '#a8a0b8',
-          }}
-        >
-          卡池待命{' '}
-          <strong style={{ color: '#f0c040', fontSize: 16 }}>{availableTasks.length}</strong>
-          {' '}个任务
-        </motion.div>
+          {/* 提示文字 */}
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+            style={{
+              fontFamily: 'var(--font-body), serif', fontStyle: 'italic',
+              fontSize: 13, color: COSMIC.textMuted,
+            }}
+          >
+            {!pool
+              ? '⏳ 时隙不足，星辰尚未就位'
+              : !availableTasks.length
+                ? '🌙 卡池已空，待新天命降临'
+                : `✦ 天命池中 · ${availableTasks.length} 个命运等待揭晓`
+            }
+          </motion.div>
 
-        {/* Timer */}
+          {/* 连抽方案提示 */}
+          {pool && minutes >= 15 && planSummary && (
+            <motion.div
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              style={{
+                padding: '6px 16px', borderRadius: 12,
+                background: 'rgba(212,168,67,0.06)',
+                border: '1px solid rgba(212,168,67,0.12)',
+                fontSize: 11, color: COSMIC.textSecondary,
+                fontFamily: 'var(--font-body), serif',
+              }}
+            >
+              连星之阵 · {planSummary}
+            </motion.div>
+          )}
+        </div>
+
+        {/* ===== Timer ===== */}
         {showTimer && selectedTask && (
           <motion.div
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="glass"
+            transition={{ type: 'spring', damping: 20 }}
             style={{
-              padding: 28,
-              borderRadius: 24,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 14,
-              width: '100%',
-              maxWidth: 360,
-              position: 'relative',
-              overflow: 'hidden',
+              background: COSMIC.glassBg, border: `1px solid ${COSMIC.glassBorder}`,
+              borderRadius: 24, padding: 28,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
+              width: '100%', maxWidth: 360, position: 'relative',
+              backdropFilter: 'blur(20px)',
             }}
           >
-            {/* Task name */}
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#f0e8da', textAlign: 'center' }}>
-              <span style={{ fontSize: 24, marginRight: 8 }}>🎯</span>
+            <div style={{
+              fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-heading), serif',
+              color: COSMIC.textPrimary, textAlign: 'center', letterSpacing: '1px',
+            }}>
+              <span style={{ fontSize: 20, marginRight: 8 }}>✦</span>
               {selectedTask.name}
             </div>
-            <Timer
-              initialMinutes={Math.max(1, selectedTask.estimatedTime || 25)}
-              onComplete={handleTimerComplete}
-            />
+            <Timer initialMinutes={Math.max(1, selectedTask.estimatedTime || 25)} onComplete={handleTimerComplete} />
             <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  dispatch({ type: 'COMPLETE_TASK', id: selectedTask.id });
-                  setSelectedTask(null);
-                  setShowTimer(false);
-                  showToast('🎉 任务完成！', 'success');
-                }}
-                style={{
-                  padding: '8px 20px',
-                  borderRadius: 10,
-                  border: 'none',
-                  background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                  color: '#fff',
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                ✅ 完成
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                onClick={() => { dispatch({ type: 'COMPLETE_TASK', id: selectedTask.id }); setSelectedTask(null); setShowTimer(false); showToast('✦ 天命已成 · 任务圆满完成', 'success'); }}
+                style={{ padding: '8px 20px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body), serif' }}>
+                ✅ 告成
               </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  dispatch({ type: 'SKIP_TASK', id: selectedTask.id });
-                  setSelectedTask(null);
-                  setShowTimer(false);
-                }}
-                style={{
-                  padding: '8px 20px',
-                  borderRadius: 10,
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  background: 'none',
-                  color: '#a8a0b8',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                🔄 跳过
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                onClick={() => { dispatch({ type: 'SKIP_TASK', id: selectedTask.id }); setSelectedTask(null); setShowTimer(false); }}
+                style={{ padding: '8px 20px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)', background: 'none', color: COSMIC.textSecondary, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body), serif' }}>
+                🔄 暂搁
               </motion.button>
             </div>
           </motion.div>
         )}
 
-        {/* Draw Result - Single */}
+        {/* ===== 抽卡结果 — 单抽 ===== */}
         <AnimatePresence>
           {drawResult && (
             <ChoiceDialog
@@ -618,21 +857,17 @@ export default function GachaPage() {
           )}
         </AnimatePresence>
 
-        {/* Draw Result - Multi */}
+        {/* ===== 抽卡结果 — 连抽 ===== */}
         {multiResults.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{ width: '100%', maxWidth: 700 }}
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ width: '100%', maxWidth: 700 }}>
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14,
-              fontSize: 14, color: '#a8a0b8',
+              fontFamily: 'var(--font-heading), serif', fontSize: 14,
+              color: COSMIC.textSecondary, letterSpacing: '1px',
             }}>
-              <ListOrdered size={18} color="#f0c040" />
-              连抽方案
-              <span style={{ fontSize: 12, color: '#6b6480' }}>|</span>
-              <span style={{ color: '#f0c040', fontWeight: 600 }}>{planSummary}</span>
+              <Star size={16} color={COSMIC.gold} fill={COSMIC.gold} />
+              连星之阵
+              <span style={{ color: COSMIC.gold, fontWeight: 600 }}>{planSummary}</span>
             </div>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
               {multiResults.flatMap(r => r.choices.slice(0, 2)).map((task, i) => {
@@ -640,61 +875,54 @@ export default function GachaPage() {
                 return (
                   <motion.div
                     key={`${task.id}-${i}`}
-                    initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ delay: i * 0.1, type: 'spring', damping: 15, stiffness: 200 }}
-                    style={{ textAlign: 'center' }}
+                    initial={{ opacity: 0, y: 30, scale: 0.85, rotateY: 30 }}
+                    animate={{ opacity: 1, y: 0, scale: 1, rotateY: 0 }}
+                    transition={{ delay: i * 0.12, type: 'spring', damping: 16, stiffness: 200 }}
                   >
-                    <div
-                      style={{
-                        width: 160, height: 220,
-                        borderRadius: 16,
-                        background: rarity.bg,
-                        border: `2px solid ${rarity.glow}`,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 8,
-                        padding: 16,
-                        position: 'relative',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {/* Rarity gradient top */}
-                      <div style={{
-                        position: 'absolute', top: 0, left: 0, right: 0, height: 4,
-                        background: rarity.gradient,
-                      }} />
-                      {/* Stars */}
-                      <div style={{ fontSize: 12, color: '#f59e0b', letterSpacing: 2 }}>
+                    <div style={{
+                      width: 170, height: 230,
+                      borderRadius: 18,
+                      background: rarity.bg,
+                      border: `1px solid ${rarity.glow}`,
+                      display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', justifyContent: 'center',
+                      gap: 8, padding: 18,
+                      position: 'relative', overflow: 'hidden',
+                    }}>
+                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: rarity.gradient }} />
+                      <div style={{ fontSize: 13, color: '#f59e0b', letterSpacing: 3, fontFamily: 'var(--font-heading), serif' }}>
                         {'★'.repeat(rarity.stars)}
                       </div>
                       <div style={{
-                        fontSize: 14, fontWeight: 700, color: '#f0e8da',
+                        padding: '2px 14px', borderRadius: 10,
+                        background: rarity.gradient, fontSize: 10, fontWeight: 700,
+                        color: '#fff', fontFamily: 'var(--font-heading), serif', letterSpacing: '1px',
+                      }}>
+                        {rarity.label}
+                      </div>
+                      <div style={{
+                        fontSize: 14, fontWeight: 700, color: COSMIC.textPrimary,
                         textAlign: 'center', lineHeight: 1.3,
+                        fontFamily: 'var(--font-body), serif',
+                        display: '-webkit-box', WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical', overflow: 'hidden',
                       }}>
                         {task.name}
                       </div>
-                      <div style={{ fontSize: 11, color: '#a8a0b8' }}>
+                      <div style={{ fontSize: 11, color: COSMIC.textMuted, fontFamily: 'var(--font-body), serif' }}>
                         ⏱ {task.estimatedTime} 分钟
                       </div>
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                         onClick={() => handleSelectTask(task)}
                         style={{
-                          padding: '6px 18px',
-                          borderRadius: 8,
-                          border: 'none',
-                          background: rarity.gradient,
-                          color: '#fff',
-                          fontSize: 11,
-                          fontWeight: 700,
-                          cursor: 'pointer',
+                          padding: '6px 20px', borderRadius: 8, border: 'none',
+                          background: rarity.gradient, color: '#fff',
+                          fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                          fontFamily: 'var(--font-heading), serif', letterSpacing: '1px',
                         }}
                       >
-                        ▶ 开始
+                        应命
                       </motion.button>
                     </div>
                   </motion.div>
@@ -704,37 +932,21 @@ export default function GachaPage() {
           </motion.div>
         )}
 
-        {/* Single selected task preview */}
+        {/* ===== 选中但未开始 ===== */}
         {selectedTask && !showTimer && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{ textAlign: 'center' }}
-          >
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                setShowTimer(true);
-                dispatch({ type: 'SET_CURRENT_TASK', id: selectedTask.id });
-              }}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              onClick={() => { setShowTimer(true); dispatch({ type: 'SET_CURRENT_TASK', id: selectedTask.id }); }}
               style={{
-                marginTop: 12,
-                padding: '12px 36px',
-                borderRadius: 12,
-                border: 'none',
+                padding: '12px 36px', borderRadius: 12, border: 'none',
                 background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                color: '#fff',
-                fontSize: 15,
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
+                color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 8,
+                fontFamily: 'var(--font-heading), serif', letterSpacing: '1px',
+                boxShadow: '0 4px 20px rgba(34,197,94,0.3)',
+              }}>
               <TimerIcon size={18} />
-              开始番茄钟
+              开启时计
             </motion.button>
           </motion.div>
         )}
@@ -743,11 +955,7 @@ export default function GachaPage() {
       {/* Replace dialog */}
       <AnimatePresence>
         {showReplace && (
-          <ReplaceDialog
-            taskId={replaceTaskId}
-            onReplace={handleReplace}
-            onCancel={() => setShowReplace(false)}
-          />
+          <ReplaceDialog taskId={replaceTaskId} onReplace={handleReplace} onCancel={() => setShowReplace(false)} />
         )}
       </AnimatePresence>
     </div>

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 
 // ===== Subjects =====
 export const SUBJECTS = [
@@ -37,6 +37,7 @@ export interface Note {
   title: string;
   wikiLinks: string[];
   content: string;
+  images?: string[];
 }
 
 export interface LinkIssue {
@@ -519,17 +520,39 @@ export function getSubjectStats(analysis: LinkAnalysisResult): SubjectStat[] {
 }
 
 // ===== React hooks =====
-export function useKnowledgeBase() {
-  const data = useMemo(() => {
-    const notes = buildNotes();
-    const knowledgePoints = buildKnowledgePoints();
-    buildReferences(notes, knowledgePoints);
-    const analysis = analyzeLinks(notes, knowledgePoints);
-    const graph = buildGraph(notes, knowledgePoints);
-    const subjectStats = getSubjectStats(analysis);
+export interface NewNoteInput {
+  name: string;
+  title: string;
+  subject: string;
+  wikiLinks: string[];
+  content: string;
+  images?: string[];
+}
 
-    return { notes, knowledgePoints, analysis, graph, subjectStats };
+export function useKnowledgeBase() {
+  const [extraNotes, setExtraNotes] = useState<NewNoteInput[]>([]);
+
+  const addNotes = useCallback((notes: NewNoteInput[]) => {
+    setExtraNotes(prev => [...prev, ...notes]);
   }, []);
 
-  return data;
+  const data = useMemo(() => {
+    const baseNotes = buildNotes();
+    const allNotes: Note[] = [
+      ...baseNotes,
+      ...extraNotes.map((n, i) => ({
+        ...n,
+        id: `upload_${Date.now()}_${i}`,
+      })),
+    ];
+    const knowledgePoints = buildKnowledgePoints();
+    buildReferences(allNotes, knowledgePoints);
+    const analysis = analyzeLinks(allNotes, knowledgePoints);
+    const graph = buildGraph(allNotes, knowledgePoints);
+    const subjectStats = getSubjectStats(analysis);
+
+    return { notes: allNotes, knowledgePoints, analysis, graph, subjectStats };
+  }, [extraNotes]);
+
+  return { ...data, addNotes };
 }

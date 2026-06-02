@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# MinerU output
+/mineru_output/
+__pycache__/
+*.pyc

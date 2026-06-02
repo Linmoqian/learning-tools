@@ -12,6 +12,7 @@ import {
   DEFAULT_SETTINGS,
 } from './types';
 import * as api from './api';
+import { chainUnlock } from './algorithms';
 
 const STORAGE_KEY = 'learning-tools-data';
 
@@ -37,10 +38,12 @@ function loadFromLocal(): AppData {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
+      // Ensure missing fields for migration from older data
       if (!parsed.scheduleSlots) parsed.scheduleSlots = DEFAULT_SLOTS;
       if (!parsed.activityOptions || !parsed.activityOptions.length) {
         parsed.activityOptions = ['无安排', '学习', '工作', '阅读', '运动', '休息'];
       }
+      if (!parsed.settings) parsed.settings = DEFAULT_SETTINGS;
       return parsed;
     }
   } catch { /* ignore */ }
@@ -159,16 +162,22 @@ function reducer(state: AppData, action: Action): AppData {
       return { ...state, currentTaskId: action.id };
 
     case 'COMPLETE_TASK': {
+      const now = new Date().toISOString();
       const tasks = state.tasks.map(t => {
         if (t.id !== action.id) return t;
         return {
           ...t,
           completed: true,
-          updatedAt: new Date().toISOString(),
+          updatedAt: now,
           successRate: Math.min(1.0, t.successRate + 0.1),
         };
       });
-      const newState = { ...state, tasks };
+      // 链式解锁依赖此任务的后置任务
+      const unlocked = chainUnlock(tasks, action.id);
+      const newState = { ...state, tasks: unlocked.tasks };
+      if (unlocked.unlocked.length > 0) {
+        console.info(`链式解锁: ${unlocked.unlocked.join(', ')}`);
+      }
       if (action.feedback) {
         const fb: TaskCompletionFeedback = {
           id: Date.now(),
@@ -458,6 +467,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const syncDispatch = useCallback((action: Action) => {
     dispatch(action);
     syncAction(action);
+  }, []);
+
+  // 定期检查周期任务重置
+  useEffect(() => {
+    dispatch({ type: 'RESET_PERIODIC' });
+    const interval = setInterval(() => {
+      dispatch({ type: 'RESET_PERIODIC' });
+    }, 60_000);
+    return () => clearInterval(interval);
   }, []);
 
   const getAvailableTasks = useCallback(() => {

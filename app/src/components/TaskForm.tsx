@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 interface TaskFormData {
   name: string;
   description: string;
+  category: string;
   estimatedTime: number;
   deadline: string;
   resistance: string;
@@ -95,6 +96,19 @@ export default function TaskForm({ data, onChange, onSubmit, onClose, title, ava
               style={inputStyle}
               autoFocus
             />
+          </Field>
+
+          <Field label="分类">
+            <select
+              value={data.category}
+              onChange={e => update({ category: e.target.value })}
+              style={inputStyle}
+            >
+              <option value="daily">📅 每日任务</option>
+              <option value="weekly">📆 每周任务</option>
+              <option value="flexible_ddl">📌 柔性截止</option>
+              <option value="accumulation">📚 积累任务</option>
+            </select>
           </Field>
 
           <Field label="描述">

@@ -36,7 +36,12 @@ export default function DiscardPage() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => dispatch({ type: 'RESET_DISCARD' })}
+            onClick={() => {
+              if (discardTasks.length === 0) return;
+              if (window.confirm(`将 ${discardTasks.length} 张卡全部移回抽牌堆？`)) {
+                dispatch({ type: 'RESET_DISCARD' });
+              }
+            }}
             style={{
               display: 'flex',
               alignItems: 'center',

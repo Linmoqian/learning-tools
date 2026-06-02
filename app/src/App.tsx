@@ -2,19 +2,22 @@ import { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import gsap from 'gsap';
-import { Sparkles, ListTodo, Trash2, CalendarDays, BookOpen, Settings } from 'lucide-react';
+import { Sparkles, Brain, ListTodo, Trash2, CalendarDays, BookOpen, Settings } from 'lucide-react';
 import { StoreProvider, useStore } from './lib/store';
+import UserGuide, { hasSeenGuide } from './components/UserGuide';
 import GachaPage from './pages/GachaPage';
 import TasksPage from './pages/TasksPage';
 import DiscardPage from './pages/DiscardPage';
 import SchedulePage from './pages/SchedulePage';
 import KnowledgePage from './pages/KnowledgePage';
 import SettingsPage from './pages/SettingsPage';
+import AgentPage from './pages/AgentPage';
 
 const NAV_ITEMS = [
   { path: '/gacha', label: '抽卡', icon: Sparkles },
   { path: '/tasks', label: '任务', icon: ListTodo },
   { path: '/knowledge', label: '知识库', icon: BookOpen },
+  { path: '/agent', label: 'AI Agent', icon: Brain },
   { path: '/discard', label: '弃牌堆', icon: Trash2 },
   { path: '/schedule', label: '日程', icon: CalendarDays },
   { path: '/settings', label: '设置', icon: Settings },
@@ -22,8 +25,23 @@ const NAV_ITEMS = [
 
 function AppShell() {
   const [expanded, setExpanded] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const { data } = useStore();
   const navRef = useRef<HTMLDivElement>(null);
+
+  // 首次启动自动显示操作指引
+  useEffect(() => {
+    if (!hasSeenGuide()) {
+      setShowGuide(true);
+    }
+  }, []);
+
+  // 监听来自设置的打开指引事件
+  useEffect(() => {
+    const handler = () => setShowGuide(true);
+    window.addEventListener('open-user-guide', handler);
+    return () => window.removeEventListener('open-user-guide', handler);
+  }, []);
 
   // 应用保存的主题
   useEffect(() => {
@@ -83,7 +101,7 @@ function AppShell() {
     };
   }, []);
 
-  return (
+  return (<>
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       {/* Sidebar */}
       <motion.nav
@@ -230,6 +248,20 @@ function AppShell() {
               }
             />
             <Route
+              path="/agent"
+              element={
+                <motion.div
+                  key="agent"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  style={{ height: '100%' }}
+                >
+                  <AgentPage />
+                </motion.div>
+              }
+            />
+            <Route
               path="/discard"
               element={
                 <motion.div
@@ -275,6 +307,8 @@ function AppShell() {
         </AnimatePresence>
       </main>
     </div>
+      <UserGuide open={showGuide} onClose={() => setShowGuide(false)} />
+    </>
   );
 }
 

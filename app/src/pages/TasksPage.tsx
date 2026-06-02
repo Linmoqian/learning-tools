@@ -17,6 +17,7 @@ export default function TasksPage() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    category: 'daily',
     estimatedTime: 25,
     deadline: '',
     resistance: 'medium',
@@ -61,6 +62,7 @@ export default function TasksPage() {
     const task: Task = {
       ...defaultTask,
       id: 0,
+      category: formData.category,
       name: formData.name,
       description: formData.description || undefined,
       estimatedTime: formData.estimatedTime,
@@ -89,6 +91,7 @@ export default function TasksPage() {
     setFormData({
       name: task.name,
       description: task.description || '',
+      category: task.category,
       estimatedTime: task.estimatedTime,
       deadline: task.deadline || '',
       resistance: task.resistance,
@@ -112,6 +115,7 @@ export default function TasksPage() {
     setFormData({
       name: '',
       description: '',
+      category: 'daily',
       estimatedTime: 25,
       deadline: '',
       resistance: 'medium',

@@ -2,12 +2,12 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Search, Network, BarChart3, ChevronRight,
-  FileText, Layers, AlertTriangle, CheckCircle, List, Server, Wifi, Sparkles,
+  FileText, Layers, AlertTriangle, CheckCircle, List, Server, Wifi,
 } from 'lucide-react';
-import AgentPanel from '../components/AgentPanel';
 import KnowledgeGraph from '../components/KnowledgeGraph';
 import KnowledgeGraph3D from '../components/KnowledgeGraph3D';
 import FileDropZone from '../components/FileDropZone';
+import NoteDetailModal from '../components/NoteDetailModal';
 import {
   useKnowledgeBase, searchItems, SUBJECTS, SUBJECT_COLORS,
 } from '../lib/knowledge';
@@ -16,7 +16,7 @@ import { checkMineruServer, isMineruOnline, convertWithMineru, getImageUrl, setS
 import { useStore } from '../lib/store';
 import type { Note, KnowledgePoint, SubjectStat } from '../lib/knowledge';
 
-type Tab = 'browse' | 'graph' | 'analysis' | 'agent';
+type Tab = 'browse' | 'graph' | 'analysis';
 
 function StatCard({ label, value, color, icon }: {
   label: string; value: number | string; color: string; icon: React.ReactNode;
@@ -207,8 +207,8 @@ function KnowledgePointCard({ kp }: { kp: KnowledgePoint }) {
   );
 }
 
-function BrowseTab({ notes, knowledgePoints, subjectFilter, setSubjectFilter, uploadedIds }:
-  { notes: Note[]; knowledgePoints: KnowledgePoint[]; subjectFilter: string | null; setSubjectFilter: (s: string | null) => void; uploadedIds: Set<string> }) {
+function BrowseTab({ notes, knowledgePoints, subjectFilter, setSubjectFilter, uploadedIds, onNoteClick }:
+  { notes: Note[]; knowledgePoints: KnowledgePoint[]; subjectFilter: string | null; setSubjectFilter: (s: string | null) => void; uploadedIds: Set<string>; onNoteClick: (note: Note) => void }) {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'all' | 'notes' | 'knowledge'>('all');
@@ -296,7 +296,11 @@ function BrowseTab({ notes, knowledgePoints, subjectFilter, setSubjectFilter, up
             笔记 ({displayNotes.length})
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
-            {displayNotes.map(note => <NoteCard key={note.id} note={note} isUploaded={uploadedIds.has(note.id)} />)}
+            {displayNotes.map(note => (
+              <div key={note.id} style={{ cursor: 'pointer' }} onClick={() => onNoteClick(note)}>
+                <NoteCard note={note} isUploaded={uploadedIds.has(note.id)} />
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -463,6 +467,7 @@ export default function KnowledgePage() {
   const { notes, knowledgePoints, analysis, graph, subjectStats, addNotes } = useKnowledgeBase();
   const [processingFiles, setProcessingFiles] = useState(false);
   const [mineruOnline, setMineruOnline] = useState(false);
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const serverCheckDone = useRef(false);
   const { data } = useStore();
 
@@ -588,7 +593,6 @@ export default function KnowledgePage() {
           { key: 'browse' as Tab, label: '浏览', icon: Search },
           { key: 'graph' as Tab, label: '知识图谱', icon: Network },
           { key: 'analysis' as Tab, label: '链接分析', icon: BarChart3 },
-          { key: 'agent' as Tab, label: 'AI Agent', icon: Sparkles },
         ].map(t => (
           <button
             key={t.key}
@@ -658,6 +662,7 @@ export default function KnowledgePage() {
                 subjectFilter={subjectFilter}
                 setSubjectFilter={setSubjectFilter}
                 uploadedIds={uploadedIds}
+                onNoteClick={setSelectedNote}
               />
             </motion.div>
           )}
@@ -710,17 +715,15 @@ export default function KnowledgePage() {
               <AnalysisTab analysis={analysis} />
             </motion.div>
           )}
-
-          {tab === 'agent' && (
-            <motion.div
-              key="agent" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              style={{ height: '100%', overflow: 'auto' }}
-            >
-              <AgentPanel notes={notes} knowledgePoints={knowledgePoints} />
-            </motion.div>
-          )}
         </AnimatePresence>
       </div>
+
+      {/* 笔记详情弹窗（Markdown 渲染） */}
+      <NoteDetailModal
+        note={selectedNote}
+        isUploaded={selectedNote ? uploadedIds.has(selectedNote.id) : false}
+        onClose={() => setSelectedNote(null)}
+      />
     </div>
   );
 }

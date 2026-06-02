@@ -220,6 +220,20 @@ export default function SettingsPage() {
       ),
     },
     {
+      title: '后端服务',
+      desc: '后端 REST API 服务地址',
+      fields: (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <InputField
+            label="服务地址"
+            value={localSettings.backendUrl || 'http://127.0.0.1:8900'}
+            onChange={v => update({ backendUrl: v })}
+            placeholder="http://127.0.0.1:8900"
+          />
+        </div>
+      ),
+    },
+    {
       title: '主题颜色',
       desc: '更改应用的主色调',
       fields: (

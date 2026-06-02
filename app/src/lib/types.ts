@@ -182,6 +182,7 @@ export interface AppSettings {
   llm: LLSettings;
   mineru: MinerU;
   theme: ThemeSettings;
+  backendUrl?: string;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -193,6 +194,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     primaryColorDark: '#d4c06a',
     themeMode: 'light',
   },
+  backendUrl: 'http://127.0.0.1:8900',
 };
 
 // ===== Store Shape =====

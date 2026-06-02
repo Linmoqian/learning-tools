@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Search, Network, BarChart3, ChevronRight,
-  FileText, Layers, AlertTriangle, CheckCircle, List,
+  FileText, Layers, AlertTriangle, CheckCircle, List, Server, Wifi,
 } from 'lucide-react';
 import KnowledgeGraph from '../components/KnowledgeGraph';
 import KnowledgeGraph3D from '../components/KnowledgeGraph3D';
@@ -11,6 +11,7 @@ import {
   useKnowledgeBase, searchItems, SUBJECTS, SUBJECT_COLORS,
 } from '../lib/knowledge';
 import { parseFile, fileToNoteInput } from '../lib/fileParser';
+import { checkMineruServer, isMineruOnline, convertWithMineru, getImageUrl } from '../lib/mineruClient';
 import type { Note, KnowledgePoint, SubjectStat } from '../lib/knowledge';
 
 type Tab = 'browse' | 'graph' | 'analysis';
@@ -76,7 +77,6 @@ function SubjectCard({ stat, onClick }: { stat: SubjectStat; onClick: () => void
           {stat.linkCount > 0 ? `${healthPct}% 健康` : '无链接'}
         </span>
       </div>
-      {/* Mini health bar */}
       {stat.linkCount > 0 && (
         <div style={{ height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
           <div style={{
@@ -96,6 +96,7 @@ function NoteCard({ note, isUploaded }: { note: Note; isUploaded?: boolean }) {
   const fileExtColors: Record<string, string> = {
     pdf: '#e74c3c', pptx: '#e67e22', docx: '#3498db', md: '#2ecc71',
   };
+  const [showImages, setShowImages] = useState(false);
 
   return (
     <motion.div
@@ -129,8 +130,39 @@ function NoteCard({ note, isUploaded }: { note: Note; isUploaded?: boolean }) {
         )}
       </div>
       <div style={{ fontSize: 11, color: '#6b6480', marginBottom: 6, lineHeight: 1.5 }}>
-        {note.content.slice(0, 80)}…
+        {note.content.slice(0, 120)}…
       </div>
+
+      {/* Image thumbnails (uploaded notes with MinerU images) */}
+      {note.images && note.images.length > 0 && (
+        <div style={{ marginBottom: 6 }}>
+          <button
+            onClick={() => setShowImages(!showImages)}
+            style={{
+              fontSize: 10, color: '#3498db', background: 'none', border: 'none',
+              cursor: 'pointer', padding: 0, fontWeight: 600,
+            }}
+          >
+            {showImages ? '收起图片' : `查看 ${note.images.length} 张图片`}
+          </button>
+          {showImages && (
+            <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
+              {note.images.map((img, i) => (
+                <img
+                  key={i}
+                  src={getImageUrl(img)}
+                  alt={`图片 ${i + 1}`}
+                  style={{
+                    width: 80, height: 60, objectFit: 'cover', borderRadius: 6,
+                    border: '1px solid rgba(255,255,255,0.08)',
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
         {note.wikiLinks.map((link, i) => (
           <span key={i} style={{
@@ -195,7 +227,6 @@ function BrowseTab({ notes, knowledgePoints, subjectFilter, setSubjectFilter, up
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {/* Search */}
       <div style={{ position: 'relative' }}>
         <Search size={16} color="#6b6480" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
         <input
@@ -211,7 +242,6 @@ function BrowseTab({ notes, knowledgePoints, subjectFilter, setSubjectFilter, up
         />
       </div>
 
-      {/* Subject filter chips */}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button
           onClick={() => setSubjectFilter(null)}
@@ -240,7 +270,6 @@ function BrowseTab({ notes, knowledgePoints, subjectFilter, setSubjectFilter, up
         ))}
       </div>
 
-      {/* View mode tabs */}
       <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 3, width: 'fit-content' }}>
         {(['all', 'notes', 'knowledge'] as const).map(mode => (
           <button
@@ -258,14 +287,13 @@ function BrowseTab({ notes, knowledgePoints, subjectFilter, setSubjectFilter, up
         ))}
       </div>
 
-      {/* Results */}
       {(viewMode === 'all' || viewMode === 'notes') && displayNotes.length > 0 && (
         <div>
           <div style={{ fontSize: 12, color: '#6b6480', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
             <FileText size={12} />
             笔记 ({displayNotes.length})
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
             {displayNotes.map(note => <NoteCard key={note.id} note={note} isUploaded={uploadedIds.has(note.id)} />)}
           </div>
         </div>
@@ -298,7 +326,6 @@ function AnalysisTab({ analysis }: { analysis: ReturnType<typeof useKnowledgeBas
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Main stats */}
       <div className="glass" style={{ padding: 20, borderRadius: 14 }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: '#f0e8da', marginBottom: 14 }}>
           链接健康概览
@@ -339,7 +366,6 @@ function AnalysisTab({ analysis }: { analysis: ReturnType<typeof useKnowledgeBas
         </div>
       </div>
 
-      {/* By subject */}
       <div className="glass" style={{ padding: 20, borderRadius: 14 }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: '#f0e8da', marginBottom: 14 }}>
           各科目链接状态
@@ -369,7 +395,6 @@ function AnalysisTab({ analysis }: { analysis: ReturnType<typeof useKnowledgeBas
         </div>
       </div>
 
-      {/* Broken links */}
       {analysis.brokenDetails.length > 0 && (
         <div className="glass" style={{ padding: 20, borderRadius: 14 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: '#e74c3c', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -395,7 +420,6 @@ function AnalysisTab({ analysis }: { analysis: ReturnType<typeof useKnowledgeBas
         </div>
       )}
 
-      {/* Missing references */}
       {analysis.missingReferences.length > 0 && (
         <div className="glass" style={{ padding: 20, borderRadius: 14 }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: '#e67e22', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -436,25 +460,71 @@ export default function KnowledgePage() {
   const [graphView3D, setGraphView3D] = useState(true);
   const { notes, knowledgePoints, analysis, graph, subjectStats, addNotes } = useKnowledgeBase();
   const [processingFiles, setProcessingFiles] = useState(false);
+  const [mineruOnline, setMineruOnline] = useState(false);
+  const serverCheckDone = useRef(false);
+
+  // Check MinerU server status on mount
+  useEffect(() => {
+    if (serverCheckDone.current) return;
+    serverCheckDone.current = true;
+    (async () => {
+      const online = await checkMineruServer();
+      setMineruOnline(online);
+    })();
+  }, []);
 
   const handleFileDrop = useCallback(async (files: File[]) => {
     setProcessingFiles(true);
-    try {
-      const newNotes = await Promise.all(
-        files.map(async (file) => {
+
+    // 尝试 MinerU 服务（优先）
+    if (isMineruOnline()) {
+      let success = 0, failed = 0;
+      for (const file of files) {
+        try {
+          const result = await convertWithMineru(file);
+          addNotes([{
+            name: result.name || file.name,
+            title: result.title || file.name.replace(/\.[^.]+$/, ''),
+            subject: '计算机',
+            wikiLinks: [],
+            content: result.content,
+            images: result.images || [],
+          }]);
+          success++;
+        } catch (err) {
+          console.error(`MinerU 转换失败: ${file.name}`, err);
+          failed++;
+        }
+      }
+      if (failed > 0 && success === 0) {
+        // 全部失败，尝试 fallback
+        console.warn('MinerU 全部失败，回退到客户端解析');
+        for (const file of files) {
+          try {
+            const parsed = await parseFile(file);
+            const newNote = fileToNoteInput(parsed, analysis.knowledgePointNames);
+            addNotes([newNote]);
+          } catch (fallbackErr) {
+            console.error(`客户端解析失败: ${file.name}`, fallbackErr);
+          }
+        }
+      }
+    } else {
+      // 使用客户端解析
+      for (const file of files) {
+        try {
           const parsed = await parseFile(file);
-          return fileToNoteInput(parsed, analysis.knowledgePointNames);
-        }),
-      );
-      addNotes(newNotes);
-    } catch (err) {
-      console.error('文件解析失败:', err);
-    } finally {
-      setProcessingFiles(false);
+          const newNote = fileToNoteInput(parsed, analysis.knowledgePointNames);
+          addNotes([newNote]);
+        } catch (err) {
+          console.error(`解析失败: ${file.name}`, err);
+        }
+      }
     }
+
+    setProcessingFiles(false);
   }, [addNotes, analysis.knowledgePointNames]);
 
-  // Uploaded note IDs start with 'upload_'
   const uploadedIds = new Set(notes.filter(n => n.id.startsWith('upload_')).map(n => n.id));
 
   return (
@@ -466,8 +536,8 @@ export default function KnowledgePage() {
           <span className="gradient-text">知识库</span>
         </h1>
 
-        {/* Stats row */}
-        <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+        {/* Stats + MinerU status */}
+        <div style={{ display: 'flex', gap: 12, marginTop: 12, alignItems: 'stretch' }}>
           <StatCard label="笔记" value={analysis.totalNotes} color="#4a8fe7" icon={<FileText size={18} color="#4a8fe7" />} />
           <StatCard label="知识点" value={analysis.totalKnowledgePoints} color="#9b59b6" icon={<Layers size={18} color="#9b59b6" />} />
           <StatCard label="链接" value={analysis.totalLinks} color="#f0c040" icon={<List size={18} color="#f0c040" />} />
@@ -477,6 +547,27 @@ export default function KnowledgePage() {
             color={analysis.totalLinks > 0 && analysis.validLinks / analysis.totalLinks >= 0.9 ? '#27ae60' : '#e74c3c'}
             icon={<CheckCircle size={18} color={analysis.totalLinks > 0 && analysis.validLinks / analysis.totalLinks >= 0.9 ? '#27ae60' : '#e74c3c'} />}
           />
+          {/* MinerU status */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass"
+            style={{
+              padding: '10px 16px', borderRadius: 12, minWidth: 120,
+              display: 'flex', flexDirection: 'column', justifyContent: 'center',
+              border: `1px solid ${mineruOnline ? 'rgba(46,204,113,0.2)' : 'rgba(255,255,255,0.06)'}`,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              {mineruOnline ? <Wifi size={14} color="#27ae60" /> : <Server size={14} color="#6b6480" />}
+              <span style={{ fontSize: 13, fontWeight: 700, color: mineruOnline ? '#27ae60' : '#6b6480' }}>
+                {mineruOnline ? 'MinerU 在线' : 'MinerU 离线'}
+              </span>
+            </div>
+            <div style={{ fontSize: 9, color: '#6b6480', marginTop: 2 }}>
+              {mineruOnline ? '文件转换由服务端处理' : '使用客户端解析（轻量）'}
+            </div>
+          </motion.div>
         </div>
       </div>
 
@@ -512,10 +603,18 @@ export default function KnowledgePage() {
               key="browse" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               style={{ height: '100%', overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 16 }}
             >
-              {/* File upload zone */}
               <FileDropZone onFiles={handleFileDrop} disabled={processingFiles} />
 
-              {/* Subject overview */}
+              {/* MinerU hint when offline */}
+              {!mineruOnline && (
+                <div style={{
+                  fontSize: 10, color: '#6b6480', textAlign: 'center',
+                  background: 'rgba(255,255,255,0.02)', padding: '4px 12px', borderRadius: 6,
+                }}>
+                  提示：启动 <code style={{ color: '#f0c040' }}>python mineru_service.py</code> 可获得公式、表格、图片的完整转换支持
+                </div>
+              )}
+
               {!subjectFilter && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
                   {subjectStats.map(stat => (
@@ -556,7 +655,6 @@ export default function KnowledgePage() {
               key="graph" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               style={{ height: '100%', minHeight: 500, display: 'flex', flexDirection: 'column' }}
             >
-              {/* 2D/3D toggle */}
               <div style={{ display: 'flex', gap: 4, marginBottom: 8, background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: 3, width: 'fit-content' }}>
                 <button
                   onClick={() => setGraphView3D(true)}

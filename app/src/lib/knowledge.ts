@@ -37,6 +37,7 @@ export interface Note {
   title: string;
   wikiLinks: string[];
   content: string;
+  images?: string[];
 }
 
 export interface LinkIssue {
@@ -525,6 +526,7 @@ export interface NewNoteInput {
   subject: string;
   wikiLinks: string[];
   content: string;
+  images?: string[];
 }
 
 export function useKnowledgeBase() {

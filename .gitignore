@@ -1,0 +1,10 @@
+# 工作树目录
+.claude/worktrees/
+
+# Node
+node_modules/
+dist/
+
+# 系统
+.DS_Store
+Thumbs.db

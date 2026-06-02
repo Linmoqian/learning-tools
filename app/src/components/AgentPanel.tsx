@@ -5,7 +5,7 @@ import {
   AlertCircle, Loader2, Copy,
 } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
-import type { Note } from '../lib/knowledge';
+import type { Note, KnowledgePoint } from '../lib/knowledge';
 import {
   type AgentType, type AIProvider, type AgentResult, type ApiKeyStatus,
   AGENT_TYPES, AGENT_LABELS, AGENT_DESCRIPTIONS,
@@ -14,7 +14,7 @@ import {
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
-export default function AgentPanel({ notes }: { notes: Note[] }) {
+export default function AgentPanel({ notes, knowledgePoints }: { notes: Note[]; knowledgePoints: KnowledgePoint[] }) {
   const [agentType, setAgentType] = useState<AgentType>('note_organizer');
   const [selectedNoteId, setSelectedNoteId] = useState<string>('');
   const [provider, setProvider] = useState<AIProvider>('claude');
@@ -26,7 +26,9 @@ export default function AgentPanel({ notes }: { notes: Note[] }) {
   const [claudeKey, setClaudeKey] = useState('');
   const [openaiKey, setOpenaiKey] = useState('');
   const [keyStatus, setKeyStatus] = useState<ApiKeyStatus>({ claude: false, openai: false });
+  const [question, setQuestion] = useState('');
 
+  const isQa = agentType === 'knowledge_qa';
   const selectedNote = notes.find(n => n.id === selectedNoteId);
 
   // Load API key status
@@ -36,18 +38,52 @@ export default function AgentPanel({ notes }: { notes: Note[] }) {
       .catch(() => console.error('获取 API Key 状态失败'));
   }, []);
 
+  const buildQaContext = useCallback((q: string): string => {
+    const query = q.toLowerCase();
+    const matchedNotes = notes.filter(n =>
+      n.title.toLowerCase().includes(query) || n.content.toLowerCase().includes(query)
+    );
+    const matchedKps = knowledgePoints.filter(kp =>
+      kp.name.toLowerCase().includes(query) || kp.description.toLowerCase().includes(query)
+    );
+
+    const parts: string[] = [];
+
+    if (matchedNotes.length > 0) {
+      parts.push('## 相关笔记');
+      matchedNotes.slice(0, 5).forEach(n => {
+        parts.push(`- [${n.subject}] ${n.title}：${n.content.slice(0, 300)}`);
+      });
+    }
+
+    if (matchedKps.length > 0) {
+      parts.push('## 相关知识点');
+      matchedKps.slice(0, 5).forEach(kp => {
+        parts.push(`- [${kp.subject}] ${kp.name}：${kp.description}`);
+      });
+    }
+
+    const context = parts.join('\n\n');
+    if (!context) {
+      return `用户问题：${q}\n\n（知识库中未找到与问题相关的内容）`;
+    }
+    return `以下是与问题相关的知识库内容：\n\n${context}\n\n用户问题：${q}`;
+  }, [notes, knowledgePoints]);
+
   const handleRun = useCallback(async () => {
-    if (!selectedNote) return;
+    if (isQa ? !question.trim() : !selectedNote) return;
 
     setStatus('loading');
     setResult(null);
     setError('');
 
+    const noteContent = isQa ? buildQaContext(question) : selectedNote!.content;
+
     try {
       const res = await invoke<AgentResult>('run_agent', {
         request: {
           agentType,
-          noteContent: selectedNote.content,
+          noteContent,
           provider,
           model,
         },
@@ -58,7 +94,7 @@ export default function AgentPanel({ notes }: { notes: Note[] }) {
       setError(typeof e === 'string' ? e : '运行 Agent 失败');
       setStatus('error');
     }
-  }, [agentType, selectedNote, provider, model]);
+  }, [agentType, isQa, question, selectedNote, provider, model, buildQaContext]);
 
   const handleSaveKey = useCallback(async (providerName: string, key: string) => {
     try {
@@ -170,29 +206,46 @@ export default function AgentPanel({ notes }: { notes: Note[] }) {
           </div>
         </div>
 
-        {/* Note + Provider selector */}
+        {/* Note selector or Question input */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 200 }}>
-          {/* Note selector */}
-          <div className="glass" style={{ padding: 12, borderRadius: 10 }}>
-            <div style={{ fontSize: 11, color: '#6b6480', marginBottom: 8 }}>选择笔记</div>
-            <select
-              value={selectedNoteId}
-              onChange={e => { setSelectedNoteId(e.target.value); setStatus('idle'); }}
-              style={{
-                width: '100%', padding: '8px 12px', borderRadius: 6,
-                border: '1px solid rgba(255,255,255,0.08)',
-                background: 'rgba(255,255,255,0.04)', color: '#f0e8da',
-                fontSize: 12, outline: 'none',
-              }}
-            >
-              <option value="">-- 请选择笔记 --</option>
-              {notes.map(n => (
-                <option key={n.id} value={n.id}>
-                  [{n.subject}] {n.title}
-                </option>
-              ))}
-            </select>
-          </div>
+          {isQa ? (
+            <div className="glass" style={{ padding: 12, borderRadius: 10 }}>
+              <div style={{ fontSize: 11, color: '#6b6480', marginBottom: 8 }}>输入你的问题</div>
+              <textarea
+                value={question}
+                onChange={e => { setQuestion(e.target.value); setStatus('idle'); }}
+                placeholder="例如：什么是数列的极限？"
+                rows={4}
+                style={{
+                  width: '100%', padding: '8px 12px', borderRadius: 6, resize: 'vertical',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(255,255,255,0.04)', color: '#f0e8da',
+                  fontSize: 12, outline: 'none', fontFamily: 'inherit',
+                }}
+              />
+            </div>
+          ) : (
+            <div className="glass" style={{ padding: 12, borderRadius: 10 }}>
+              <div style={{ fontSize: 11, color: '#6b6480', marginBottom: 8 }}>选择笔记</div>
+              <select
+                value={selectedNoteId}
+                onChange={e => { setSelectedNoteId(e.target.value); setStatus('idle'); }}
+                style={{
+                  width: '100%', padding: '8px 12px', borderRadius: 6,
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(255,255,255,0.04)', color: '#f0e8da',
+                  fontSize: 12, outline: 'none',
+                }}
+              >
+                <option value="">-- 请选择笔记 --</option>
+                {notes.map(n => (
+                  <option key={n.id} value={n.id}>
+                    [{n.subject}] {n.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Provider + Model */}
           <div className="glass" style={{ padding: 12, borderRadius: 10 }}>
@@ -237,14 +290,14 @@ export default function AgentPanel({ notes }: { notes: Note[] }) {
       {/* Run button */}
       <button
         onClick={handleRun}
-        disabled={!selectedNote || status === 'loading'}
+        disabled={(isQa ? !question.trim() : !selectedNote) || status === 'loading'}
         style={{
           padding: '12px 24px', borderRadius: 10, border: 'none',
           background: status === 'loading' ? 'rgba(240,192,64,0.3)' : 'linear-gradient(135deg, #f0c040, #c99f2e)',
           color: status === 'loading' ? '#a8a0b8' : '#0a0e1a',
           fontSize: 14, fontWeight: 700, cursor: status === 'loading' ? 'not-allowed' : 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          opacity: !selectedNote ? 0.5 : 1,
+          opacity: (isQa ? !question.trim() : !selectedNote) ? 0.5 : 1,
         }}
       >
         {status === 'loading' ? (
@@ -295,7 +348,9 @@ export default function AgentPanel({ notes }: { notes: Note[] }) {
           >
             <Loader2 size={32} style={{ animation: 'spin 1s linear infinite' }} />
             <div style={{ fontSize: 13 }}>
-              正在使用 {PROVIDER_LABELS[provider]} {model} 处理笔记...
+              {isQa
+                ? `正在搜索知识库并调用 ${PROVIDER_LABELS[provider]} ${model} 回答...`
+                : `正在使用 ${PROVIDER_LABELS[provider]} ${model} 处理笔记...`}
             </div>
           </motion.div>
         )}
@@ -346,7 +401,9 @@ export default function AgentPanel({ notes }: { notes: Note[] }) {
             }}
           >
             <Sparkles size={32} opacity={0.3} />
-            <div style={{ fontSize: 13 }}>选择笔记和 Agent 后开始分析</div>
+            <div style={{ fontSize: 13 }}>
+              {isQa ? '输入问题后开始基于知识库回答' : '选择笔记和 Agent 后开始分析'}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -5,6 +5,7 @@ export const AGENT_TYPES = [
   'knowledge_extractor',
   'structure_reviewer',
   'content_reviewer',
+  'knowledge_qa',
 ] as const;
 export type AgentType = (typeof AGENT_TYPES)[number];
 
@@ -13,6 +14,7 @@ export const AGENT_LABELS: Record<AgentType, string> = {
   knowledge_extractor: '知识点整理',
   structure_reviewer: '结构审查',
   content_reviewer: '内容审查',
+  knowledge_qa: '知识问答',
 };
 
 export const AGENT_DESCRIPTIONS: Record<AgentType, string> = {
@@ -20,6 +22,7 @@ export const AGENT_DESCRIPTIONS: Record<AgentType, string> = {
   knowledge_extractor: '从笔记中提取核心知识点，建立知识点间的关联关系',
   structure_reviewer: '审查笔记的章节结构和逻辑层次，提出结构优化建议',
   content_reviewer: '审查内容的准确性和完整性，检查概念错误和表述问题',
+  knowledge_qa: '基于知识库内容回答你的学习问题',
 };
 
 export type AIProvider = 'claude' | 'openai';

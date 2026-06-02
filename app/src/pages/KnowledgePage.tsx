@@ -525,7 +525,7 @@ export default function KnowledgePage() {
               key="agent" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               style={{ height: '100%', overflow: 'auto' }}
             >
-              <AgentPanel notes={notes} />
+              <AgentPanel notes={notes} knowledgePoints={knowledgePoints} />
             </motion.div>
           )}
         </AnimatePresence>
